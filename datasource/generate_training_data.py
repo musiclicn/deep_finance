@@ -1,9 +1,9 @@
 from util import get_sp500_tickers
+import config
 
-import os
-import sys
 import pandas as pd
 import numpy as np
+import os
 
 start_row_idx = 33
 ignore_tail_row = 5
@@ -60,12 +60,45 @@ class TrainingReader(object):
             # np.save(out_file, result_matrix)
 
 
+def prepare_training_data():
+    FOLDER = config.directory['linux']
+    reader = TrainingReader(os.path.join(FOLDER, '2_macd_3_close_up_trend_csv'))
+    training_data = []
+    lables = []
+    for training_one, label in reader.get_next():
+        training_data.append(training_one)
+        lables.append(label)
+
+    training_data_array = np.array(training_data)
+    shape = training_data_array.shape
+    training_data_processed = training_data_array.reshape(shape + (1,))
+    labels_array = np.array(lables)
+    print "training data", training_data_processed.shape
+    print "labels ", labels_array.shape
+    np.save(os.path.join(FOLDER, 'training.npy'), training_data_processed)
+    np.save(os.path.join(FOLDER, 'lables.npy'), labels_array)
+    print FOLDER
+
+
 def main():
-    reader = TrainingReader(r'C:\Users\Cheng\data\2_macd_3_close_up_trend_csv')
-    for training_data, target in reader.get_next():
-        pass
+    prepare_training_data()
+    """
+    FOLDER = r'/tmp/yahoo_data/'
+    reader = TrainingReader(os.path.join(FOLDER,'2_macd_3_close_up_trend_csv'))
+    training_data = []
+    lables = []
+    for training_one, label in reader.get_next():
+        training_data.append(training_one)
+        lables.append(label)
         # print training_data.shape
         # print target
+    training_data__array = np.array(training_data)
+    labels_array = np.array(lables)
+    print "training_data__array", training_data__array.shape
+    print "labels ", labels_array.shape
+    np.save(os.path.join(FOLDER,'training.npy'), training_data__array)
+    np.save(os.path.join(FOLDER,'labels.npy'), labels_array)
+    """
 
 
 if __name__ == "__main__":
