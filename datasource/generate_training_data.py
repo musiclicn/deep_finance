@@ -4,10 +4,11 @@ import config
 import pandas as pd
 import numpy as np
 import os
+import sys
 
 start_row_idx = 33
 ignore_tail_row = 5
-width = 252
+width = 256
 
 
 class TrainingReader(object):
@@ -33,14 +34,15 @@ class TrainingReader(object):
                 continue
 
             for i in xrange(start_row_idx, len(df) - width - ignore_tail_row):
-                sub_df = df.iloc[i: i + width][['macd', 'signal', 'histogram']]
-                # print sub_df.shape
-                sub_matrix = sub_df.as_matrix()
-                # print matrix
-                target_matrix = sub_matrix.transpose()
-                trend = df.iloc[i + width]['trend']
+                sub_df = df.iloc[i: i + width]['macd']
+                input = sub_df.reshape((16, 16))
+                # print input.shape
+                #, 'signal', 'histogram']]
+                # sub_matrix = sub_df.as_matrix()
+                # target_matrix = sub_matrix.transpose()
+                trend = df.iloc[i + width -1]['trend']
                 # print "type(trend)", type(trend)
-                yield target_matrix, trend
+                yield input, trend
                 # print target_matrix
                 # print i, target_matrix.shape
                 """
@@ -53,7 +55,7 @@ class TrainingReader(object):
                     # print "assign"
                     result_matrix = target_matrix
                 yield result_matrix
-            sys.exit(0)
+
             """
             # print result_matrix.shape
             # out_file = os.path.join(output_dir, ticker )
@@ -64,19 +66,21 @@ def prepare_training_data():
     FOLDER = config.directory['linux']
     reader = TrainingReader(os.path.join(FOLDER, '2_macd_3_close_up_trend_csv'))
     training_data = []
-    lables = []
+    labels = []
     for training_one, label in reader.get_next():
+        # print training_one.shape
+        # print training_one
         training_data.append(training_one)
-        lables.append(label)
+        labels.append(label)
 
     training_data_array = np.array(training_data)
     shape = training_data_array.shape
     training_data_processed = training_data_array.reshape(shape + (1,))
-    labels_array = np.array(lables)
+    labels_array = np.array(labels)
     print "training data", training_data_processed.shape
     print "labels ", labels_array.shape
     np.save(os.path.join(FOLDER, 'training.npy'), training_data_processed)
-    np.save(os.path.join(FOLDER, 'lables.npy'), labels_array)
+    np.save(os.path.join(FOLDER, 'labels.npy'), labels_array)
     print FOLDER
 
 
