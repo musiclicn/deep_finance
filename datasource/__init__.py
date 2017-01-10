@@ -6,6 +6,8 @@ import config
 import os
 import numpy as np
 
+from reader import TrainingReader
+
 
 def prepare_training_data():
     download_and_calc_macd_label()
