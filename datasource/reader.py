@@ -1,11 +1,12 @@
 import config
 import pandas as pd
 import numpy as np
+import datetime
 import os
 
 start_row_idx = 1
 ignore_tail_row = 1
-width = 128
+WIDTH = 128
 CLASS_N = 5
 
 
@@ -19,14 +20,21 @@ class TrainingReader(object):
 
         self.all_x = []
         self.all_y = []
+        cnt = 0
         for x, y in self.traing_data():
+            # if cnt > 100:
+            #     break
+            # print x[:3]
+            # print x[-3:]
+            # print y
+            # cnt += 1
             self.all_x.append(x)
             self.all_y.append(y)
 
         self._batch_cnt = 0
 
     def traing_data(self):
-        return self.get_next(self._training_files)
+        return self.get_next(self._training_files[:100])
 
     def test_data(self):
         return self.get_next(self._validation_files[:10])
@@ -59,6 +67,7 @@ class TrainingReader(object):
 
     def get_next(self, files):
         for cnt, file in enumerate(files):
+            print datetime.datetime.now()
             print cnt, file
             file_name = os.path.join(self._folder, file)
 
@@ -67,24 +76,42 @@ class TrainingReader(object):
                 continue
 
             df = pd.DataFrame.from_csv(file_name)
-            if len(df) < start_row_idx + width:
+            if len(df) < start_row_idx + WIDTH:
                 continue
 
-            for i in xrange(start_row_idx, len(df) - width - ignore_tail_row):
-                sub_df = df.iloc[i: i + width][['change%', 'open%', 'high%', 'low%', 'cur_label']]
-                # sub_df = df.iloc[i: i + width][['change%', 'cur_label']]
-                # sub_df = df.iloc[i: i + width]['change%']
-                matrix = sub_df.as_matrix()
-                input = matrix.reshape((width, 5))
-                label = df.iloc[i + width - 1]['label']
-                label_5 = np.zeros(CLASS_N)
-                label_5[int(label)] = 1
-                yield input, label_5
+            # for i in xrange(start_row_idx, len(df) - WIDTH - ignore_tail_row):
+            #     sub_df = df.iloc[i: i + WIDTH][['change%', 'open%', 'high%', 'low%', 'cur_label']]
+            #     # sub_df = df.iloc[i: i + width][['change%', 'cur_label']]
+            #     # sub_df = df.iloc[i: i + width]['change%']
+            #     matrix = sub_df.as_matrix()
+            #     input = matrix.reshape((WIDTH, 5))
+            #     raw_label = df.iloc[i + WIDTH - 1]['label']
+            #     # print 'row:', i + width - 1
+            #     # print 'label:', label
+            #     # construct label list with len=CLASS_N
+            #     label = np.zeros(CLASS_N)
+            #     label[int(raw_label)] = 1
+            #     yield input, label
+
+            input_matrix = []
+            for row in df.itertuples():
+                if np.isnan(row[7]) or np.isnan(row[12]):
+                    continue
+                raw_label = row[12]
+                one_row = [row[7], row[8], row[9], row[10], row[11]]
+                input_matrix.append(one_row)
+                if len(input_matrix) > WIDTH:
+                    input_matrix.pop(0)
+                if len(input_matrix) == WIDTH:
+                    label = np.zeros(CLASS_N)
+                    label[int(raw_label)] = 1
+                    yield np.array(input_matrix), label
 
 
 def main():
-    reader = TrainingReader(config.change_per_dir)
+    reader = TrainingReader(config.class_5_dir)
     for x, y in reader.get_next(reader._files):
+        # pass
         print '*********************'
         print x.shape
         print x

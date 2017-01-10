@@ -1,4 +1,4 @@
-from config import change_per_dir
+from config import class_5_dir
 
 import numpy as np
 import pandas as pd
@@ -13,7 +13,7 @@ def get_quantile():
         # print ticker
         if counter > 50:
             break
-        path = os.path.join(change_per_dir, ticker + '.csv')
+        path = os.path.join(class_5_dir, ticker + '.csv')
         if not os.path.exists(path):
             continue
         df = pd.DataFrame.from_csv(path)

@@ -1,4 +1,4 @@
-from config import daily_dir, change_per_dir, macd_dir, start, end, quantile_5
+from config import daily_dir, macd_dir, start, end, quantile_5, class_5_dir
 from util import get_sp500_tickers
 from classification import get_quantile, label
 
@@ -120,7 +120,7 @@ def calc_change_per(input_dir, out_dir):
 
 
 def main():
-    calc_change_per(daily_dir, change_per_dir)
+    calc_change_per(daily_dir, class_5_dir)
     # 1. download SPY 500 stocks historical daily bar
     # download_stock_daily_csv()
 
