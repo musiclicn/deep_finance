@@ -1,5 +1,6 @@
 from generate_training_data import TrainingReader
 from process_yahoo_data import download_and_calc_macd_label
+from util import get_sp500_tickers
 import config
 
 import os
