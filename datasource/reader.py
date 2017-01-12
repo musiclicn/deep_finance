@@ -1,13 +1,14 @@
 import config
 import pandas as pd
 import numpy as np
-import datetime
 import os
+import datetime
 
 start_row_idx = 1
 ignore_tail_row = 1
 WIDTH = 128
 CLASS_N = 5
+FEATURE_N =5
 
 
 class TrainingReader(object):
@@ -34,7 +35,7 @@ class TrainingReader(object):
         self._batch_cnt = 0
 
     def traing_data(self):
-        return self.get_next(self._training_files[:100])
+        return self.get_next(self._training_files)
 
     def test_data(self):
         return self.get_next(self._validation_files[:10])
@@ -66,11 +67,13 @@ class TrainingReader(object):
         return all_x, all_y
 
     def get_next(self, files):
+        pre_time = datetime.datetime.now()
         for cnt, file in enumerate(files):
-            print datetime.datetime.now()
             print cnt, file
             file_name = os.path.join(self._folder, file)
-
+            cur_time = datetime.datetime.now()
+            print cur_time - pre_time
+            pre_time = cur_time
             if not os.path.exists(file_name):
                 print file_name + "does not exist"
                 continue
@@ -79,26 +82,16 @@ class TrainingReader(object):
             if len(df) < start_row_idx + WIDTH:
                 continue
 
-            # for i in xrange(start_row_idx, len(df) - WIDTH - ignore_tail_row):
-            #     sub_df = df.iloc[i: i + WIDTH][['change%', 'open%', 'high%', 'low%', 'cur_label']]
-            #     # sub_df = df.iloc[i: i + width][['change%', 'cur_label']]
-            #     # sub_df = df.iloc[i: i + width]['change%']
-            #     matrix = sub_df.as_matrix()
-            #     input = matrix.reshape((WIDTH, 5))
-            #     raw_label = df.iloc[i + WIDTH - 1]['label']
-            #     # print 'row:', i + width - 1
-            #     # print 'label:', label
-            #     # construct label list with len=CLASS_N
-            #     label = np.zeros(CLASS_N)
-            #     label[int(raw_label)] = 1
-            #     yield input, label
-
+            sub_df = df[['change%', 'cur_label', 'open%', 'high%', 'low%', 'label']]
+            # print sub_df.head()
             input_matrix = []
-            for row in df.itertuples():
-                if np.isnan(row[7]) or np.isnan(row[12]):
+            start_index = 1
+            for row in sub_df.itertuples():
+                label_index = start_index + FEATURE_N
+                if np.isnan(row[start_index]) or np.isnan(row[label_index]):
                     continue
-                raw_label = row[12]
-                one_row = [row[7], row[8], row[9], row[10], row[11]]
+                raw_label = row[label_index]
+                one_row = [row[1], row[2], row[3], row[4], row[5]]
                 input_matrix.append(one_row)
                 if len(input_matrix) > WIDTH:
                     input_matrix.pop(0)
