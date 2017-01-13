@@ -24,7 +24,7 @@ def get_quantile():
             change_per_series = change_per_series.append(df['change%']).reset_index(drop=True)
             # print 'after size: ', change_per_series.size
 
-    percentage = np.arange(0.2, 1, 0.2)
+    percentage = np.arange(0.25, 1, 0.25)
     return change_per_series.dropna().quantile(percentage).tolist()
 
 
