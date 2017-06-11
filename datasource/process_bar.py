@@ -1,22 +1,36 @@
 from config import *
 from util import get_sp500_tickers
+from graph import draw_graph
 
 import pandas as pd
 import numpy as np
 
 
 class Bar(object):
-    def __init__(self, high, low, trend=1):
+    def __init__(self, time, high, low, trend=1):
+        self.time = time
         self.high = high
         self.low = low
         self.trend = trend
         # self.pre_trend = pre_trend
 
+    def __str__(self):
+        return 'Bar High:{0:.2f} Low:{1:.2f} Trend:{2}'.format(self.high, self.low, self.trend)
+
     def contains(self, other):
         return self.low <= other.low and self.high >= other.high
 
-    def __str__(self):
-        return 'Bar High:{0} Low:{1} Trend:{2}'.format(self.high, self.low, self.trend)
+    def to_dict(self):
+        return {
+            'time': self.time,
+            'high': self.high,
+            'low': self.low,
+            'trend': self.trend
+        }
+
+
+def bars_to_dataframe(bars):
+    return pd.DataFrame.from_records((bar.to_dict() for bar in bars), index='time')
 
 
 class BarRelationship(object):
@@ -45,22 +59,22 @@ def determine_bar_relationship(bar1, bar2):
 def merge_bars(bar1, bar2, relationship):
     if relationship == BarRelationship.LEFT_CONTAINS_RIGHT:
         if bar1.trend == 1:
-            return Bar(bar1.high, bar2.low, bar1.trend)
+            return Bar(bar1.time, bar1.high, bar2.low, bar1.trend)
         elif bar1.trend == -1:
-            return Bar(bar2.high, bar1.low, bar1.trend)
+            return Bar(bar1.time, bar2.high, bar1.low, bar1.trend)
     elif relationship == BarRelationship.RIGHT_CONTAINS_LEFT:
         if bar1.trend == 1:
-            return Bar(bar2.high, bar1.low, bar1.trend)
+            return Bar(bar1.time, bar2.high, bar1.low, bar1.trend)
         elif bar1.trend == -1:
-            return Bar(bar1.high, bar2.low, bar1.trend)
+            return Bar(bar1.time, bar1.high, bar2.low, bar1.trend)
     raise Exception('invalid bars')
 
 
 def process_bars(bars):
     processed_bars = []
-    first_bar = bars.pop()
-    processed_bars.append(Bar(first_bar.high, first_bar.low, 1))
-    for bar in bars:
+    first_bar = bars[0]
+    processed_bars.append(Bar(first_bar.time, first_bar.high, first_bar.low, 1))
+    for bar in bars[1:]:
         bar1 = processed_bars.pop()
         bar2 = bar
         relationship = determine_bar_relationship(bar1, bar2)
@@ -69,10 +83,10 @@ def process_bars(bars):
             processed_bars.append(new_bar)
         elif relationship == BarRelationship.UP_TREND:
             processed_bars.append(bar1)
-            processed_bars.append(Bar(bar2.high, bar2.low, 1))
+            processed_bars.append(Bar(bar2.time, bar2.high, bar2.low, 1))
         elif relationship == BarRelationship.DOWN_TREND:
             processed_bars.append(bar1)
-            processed_bars.append(Bar(bar2.high, bar2.low, -1))
+            processed_bars.append(Bar(bar2.time, bar2.high, bar2.low, -1))
 
     return processed_bars
 
@@ -92,17 +106,15 @@ def process_csv(input_dir, out_dir):
         # df['log_open'] = np.log(df.Open) - np.log(df.Close.shift(1))
         raw_bars = []
         for index, row in df.iterrows():
-            bar = Bar(row.High, row.Close, 0)
+            bar = Bar(index, row.High, row.Close, 0)
             raw_bars.append(bar)
-            # if pre_bar:
-            #     print pre_bar, bar
-            #     trend = determine_trend(pre_bar, bar)
-            #     bar.trend = 1 if trend == BarRelationship.UP_TREND else -1
-            # pre_bar = bar
-            # print bar
-        # print 'raw bars:', raw_bars
+
         processed_bars = process_bars(raw_bars)
-        print 'processed_bars:', processed_bars
+        # print 'processed_bars:', processed_bars
+        # print processed_bars[0]
+        df_result = bars_to_dataframe(processed_bars)
+        print df_result.head(10)
+        draw_graph(f, df_result)
         return
 
 
