@@ -13,6 +13,8 @@ class Bar(object):
         self.low = low
         self.trend = trend
         self.cur_trend_days = 1
+        self.pre_same_trend_days = 1
+        self.pre_opposite_trend_days = 1
 
     def __str__(self):
         return 'Bar High:{0:.2f} Low:{1:.2f} Trend:{2}'.format(self.high, self.low, self.trend)
@@ -27,6 +29,8 @@ class Bar(object):
             'low': self.low,
             'trend': self.trend,
             'cur_trend_days': self.cur_trend_days,
+            'pre_same_trend_days': self.pre_same_trend_days,
+            'pre_opposite_trend_days': self.pre_opposite_trend_days,
         }
 
 
@@ -71,10 +75,29 @@ def merge_bars(bar1, bar2, relationship):
     raise Exception('invalid bars')
 
 
+def set_prev_trend_days(bar, processed_bars):
+    size = len(processed_bars)
+    i = size - 1
+    while i >= 0:
+        old_bar = processed_bars[i]
+        i -= 1
+        if old_bar.trend != bar.trend:
+            bar.pre_opposite_trend_days = old_bar.cur_trend_days
+            break
+    # continue with previous index
+    while i >= 0:
+        old_bar = processed_bars[i]
+        i -= 1
+        if old_bar.trend == bar.trend:
+            bar.pre_same_trend_days = old_bar.cur_trend_days
+            break
+
+
 def process_bars(bars):
     processed_bars = []
     first_bar = bars[0]
     processed_bars.append(Bar(first_bar.time, first_bar.high, first_bar.low, 1))
+
     for bar in bars[1:]:
         bar1 = processed_bars.pop()
         bar2 = bar
@@ -85,6 +108,7 @@ def process_bars(bars):
             processed_bars.append(new_bar)
             if new_bar.trend == pre_bar.trend:
                 new_bar.cur_trend_days = pre_bar.cur_trend_days + 1
+            set_prev_trend_days(new_bar, processed_bars)
 
         elif relationship == BarRelationship.UP_TREND:
             processed_bars.append(bar1)
@@ -92,12 +116,14 @@ def process_bars(bars):
             processed_bars.append(bar2)
             if bar1.trend == 1:
                 bar2.cur_trend_days = bar1.cur_trend_days + 1
+            set_prev_trend_days(bar2, processed_bars)
         elif relationship == BarRelationship.DOWN_TREND:
             processed_bars.append(bar1)
             bar2.trend = -1
             processed_bars.append(bar2)
             if bar1.trend == -1:
                 bar2.cur_trend_days = bar1.cur_trend_days + 1
+            set_prev_trend_days(bar2, processed_bars)
 
     return processed_bars
 
