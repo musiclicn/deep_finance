@@ -12,7 +12,7 @@ class Bar(object):
         self.high = high
         self.low = low
         self.trend = trend
-        # self.pre_trend = pre_trend
+        self.cur_trend_days = 1
 
     def __str__(self):
         return 'Bar High:{0:.2f} Low:{1:.2f} Trend:{2}'.format(self.high, self.low, self.trend)
@@ -25,7 +25,8 @@ class Bar(object):
             'time': self.time,
             'high': self.high,
             'low': self.low,
-            'trend': self.trend
+            'trend': self.trend,
+            'cur_trend_days': self.cur_trend_days,
         }
 
 
@@ -80,15 +81,36 @@ def process_bars(bars):
         relationship = determine_bar_relationship(bar1, bar2)
         if relationship in [BarRelationship.LEFT_CONTAINS_RIGHT, BarRelationship.RIGHT_CONTAINS_LEFT]:
             new_bar = merge_bars(bar1, bar2, relationship)
+            pre_bar = processed_bars[-1]
             processed_bars.append(new_bar)
+            if new_bar.trend == pre_bar.trend:
+                new_bar.cur_trend_days = pre_bar.cur_trend_days + 1
+
         elif relationship == BarRelationship.UP_TREND:
             processed_bars.append(bar1)
-            processed_bars.append(Bar(bar2.time, bar2.high, bar2.low, 1))
+            bar2.trend = 1
+            processed_bars.append(bar2)
+            if bar1.trend == 1:
+                bar2.cur_trend_days = bar1.cur_trend_days + 1
         elif relationship == BarRelationship.DOWN_TREND:
             processed_bars.append(bar1)
-            processed_bars.append(Bar(bar2.time, bar2.high, bar2.low, -1))
+            bar2.trend = -1
+            processed_bars.append(bar2)
+            if bar1.trend == -1:
+                bar2.cur_trend_days = bar1.cur_trend_days + 1
 
     return processed_bars
+
+
+def calc_log_change(df):
+    df['gravity_log'] = np.log(df.gravity) - np.log(df.gravity.shift(1))
+    df['high_log'] = np.log(df.high) - np.log(df.gravity.shift(1))
+    df['low_log'] = np.log(df.low) - np.log(df.gravity.shift(1))
+
+    # df['change%'] = df['Close'].rolling(center=False, window=2).apply(lambda s: s[1] / s[0] - 1)
+    # df['cur_trend_days'] = df.trend.rolling(center=False, window=2).apply(calc_cur_trend_days)
+    # df['open%'] = df['Open'] / df['Close'] - 1
+    # df['high%'] = df['High'] / df['Close'] - 1
 
 
 def process_csv(input_dir, out_dir):
@@ -112,9 +134,13 @@ def process_csv(input_dir, out_dir):
         processed_bars = process_bars(raw_bars)
         # print 'processed_bars:', processed_bars
         # print processed_bars[0]
-        df_result = bars_to_dataframe(processed_bars)
-        print df_result.head(10)
-        draw_graph(f, df_result)
+        df2 = bars_to_dataframe(processed_bars)
+        df2['gravity'] = (df2.high + df2.low) / 2
+
+        calc_log_change(df2)
+        print df2.head(10)
+        df2.to_csv('/data/out.csv')
+        # draw_graph(f, df_result)
         return
 
 
