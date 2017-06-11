@@ -14,15 +14,11 @@ import numpy as np
 from tensorflow.python.ops import rnn, rnn_cell
 import datetime
 
-# # Import MNIST data
-# from tensorflow.examples.tutorials.mnist import input_data
-# mnist = input_data.read_data_sets("/tmp/data/", one_hot=True)
-
-
 
 from datasource import TrainingReader
 from datasource.config import class_4_dir, class_2_dir, class_4_test
 
+start_time = datetime.datetime.now()
 reader = TrainingReader(class_4_dir)
 test_reader = TrainingReader(class_4_test)
 '''
@@ -39,7 +35,7 @@ output: change% in 10 class
 # Parameters
 learning_rate = 0.001
 # training_iters = 1000 * 1000 * 5
-training_iters = 1000 * 1000
+training_iters = 1000 * 1000 * 1
 batch_size = 128
 display_step = 10
 
@@ -128,10 +124,13 @@ with tf.Session() as sess:
     print("Optimization Finished!")
 
     # Calculate accuracy for 128 mnist test images
-    test_len = 128
+    test_len = 400*500
     test_images, test_labels = test_reader.get_all_data()
     test_data = np.asarray(test_images[:test_len]).reshape((-1, n_steps, n_input))
     test_label = np.asarray(test_labels[:test_len])
     print("Testing Accuracy:", \
         sess.run(accuracy, feed_dict={x: test_data, y: test_label}))
-    print(datetime.datetime.now())
+    end_time = datetime.datetime.now()
+    print(start_time)
+    print(end_time)
+    print(end_time - start_time)

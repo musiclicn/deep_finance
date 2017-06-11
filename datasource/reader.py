@@ -37,14 +37,6 @@ class TrainingReader(object):
     def all_data(self):
         return self.get_next(self._files)
 
-    # def get_training_data(self):
-    #     all_x = []
-    #     all_y = []
-    #     for x, y in self.traing_data():
-    #         all_x.append(x)
-    #         all_y.append(y)
-    #     return all_x, all_y
-
     def training_next_batch(self, batch_size):
         # start again from beginning, reset index to 0
         if (self._batch_cnt + 1) * batch_size > len(self.all_y):
@@ -60,12 +52,6 @@ class TrainingReader(object):
 
     def get_all_data(self):
         return self.all_x, self.all_y
-        # all_x = []
-        # all_y = []
-        # for x, y in self.test_data():
-        #     all_x.append(x)
-        #     all_y.append(y)
-        # return all_x, all_y
 
     def get_next(self, files):
         # pre_time = datetime.datetime.now()

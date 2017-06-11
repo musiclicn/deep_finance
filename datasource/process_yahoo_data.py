@@ -4,6 +4,7 @@ from classification import get_quantile, label
 
 from pandas_datareader.data import YahooDailyReader
 import pandas as pd
+import numpy as np
 import os
 import datetime
 
@@ -53,7 +54,7 @@ def calculate_macd_and_trend(input_dir, out_dir):
         calc_macd(df)
         # print datetime.datetime.now().time()
         # df['trend'] = pd.rolling_apply(df['Close'], 3, calc_3_day_trend).shift(-2)
-        # df['trend'] = df['Close'].rolling(center=False, window=2).apply(calc_next_day_change).shift(-1)
+        # df['trend'] = df['Close'].rolling(center=False, window=2).apply(calc_ls next_day_change).shift(-1)
         # df['change_percentage'] = pd.rolling_apply(df['Close'], 2, lambda s: s[1] / s[0] - 1).shift(-1)
         df['change'] = df['Close'].rolling(center=False, window=2).apply(lambda s: s[1] / s[0] - 1).shift(-1)
         # print datetime.datetime.now().time()
@@ -97,11 +98,39 @@ def calc_change_per(input_dir, out_dir):
         df.to_csv(file_path)
 
 
+def calc_log_return(input_dir, out_dir):
+    if not os.path.exists(out_dir):
+        os.makedirs(out_dir)
+
+    files = os.listdir(input_dir)
+    for f in files:
+        print f
+        file_name = os.path.join(input_dir, f)
+        print file_name
+        df = pd.DataFrame.from_csv(file_name)
+        df['log_close'] = np.log(df.Close) - np.log(df.Close.shift(1))
+
+        df['change%'] = df['Close'].rolling(center=False, window=2).apply(lambda s: s[1] / s[0] - 1)
+        df['open%'] = df['Open'] / df['Close'] - 1
+        df['high%'] = df['High'] / df['Close'] - 1
+        df['low%'] = df['Low'] / df['Close'] - 1
+        df['std'] = df['change%'].rolling(center=False, window=20).std()
+        df['cur_label'] = df['change%'].rolling(center=False, window=1).apply(lable_by_quantile)
+        # df['12_exma'] = df['Close'].ewm(ignore_na=False, span=12, min_periods=12, adjust=True).mean()
+        # df['26_exma'] = df['Close'].ewm(ignore_na=False, span=26, min_periods=26, adjust=True).mean()
+        # df['macd'] = df['12_exma'] - df['26_exma']
+        # df['signal'] = df['macd'].ewm(ignore_na=False, span=9, min_periods=9, adjust=True).mean()
+        # df['histogram'] = df['macd'] - df['signal']
+        df['label'] = df['change%'].rolling(center=False, window=1).apply(lable_by_quantile).shift(-1)
+        file_path = os.path.join(out_dir, f)
+        df.to_csv(file_path)
+        return
+
 def main():
-    print pd.__version__
+    print 'pandas version:', pd.__version__
     tickers = get_sp500_tickers()
-    download_stock_daily_csv(tickers, test_dir, test_start_date, test_end_date)
-    calc_change_per(test_dir, class_4_test)
+    # download_stock_daily_csv(tickers, test_dir, test_start_date, test_end_date)
+    calc_log_return(test_dir, log_return)
     # 1. download SPY 500 stocks historical daily bar
     # download_stock_daily_csv()
 

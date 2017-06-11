@@ -35,13 +35,15 @@ import tensorflow as tf
 
 # SOURCE_URL = 'http://yann.lecun.com/exdb/mnist/'
 WORK_DIRECTORY = 'data'
-# IMAGE_SIZE = 28
-ROW_N = 3
-COL_N =252
+IMAGE_SIZE = 16
+# ROW_N = 3
+# COL_N =252
+
+IMAGE_SIZE = 16
 
 NUM_CHANNELS = 1
 PIXEL_DEPTH = 255
-NUM_LABELS = 2
+NUM_LABELS = 10
 VALIDATION_SIZE = 5000  # Size of the validation set.
 SEED = 66478  # Set to None for random seed.
 BATCH_SIZE = 64
@@ -49,7 +51,7 @@ NUM_EPOCHS = 10
 EVAL_BATCH_SIZE = 64
 EVAL_FREQUENCY = 100  # Number of steps between evaluations.
 
-TEST_SIZE =10000
+TEST_SIZE = 2000
 
 
 tf.app.flags.DEFINE_boolean("self_test", False, "True if running a self test.")
@@ -107,9 +109,8 @@ def main(argv=None):  # pylint: disable=unused-argument
     # test_data = extract_data(test_data_filename, 10000)
     # test_labels = extract_labels(test_labels_filename, 10000)
 
-    train_data = numpy.load(r'/tmp/yahoo_data/training.npy')
-    train_labels = numpy.load(r'/tmp/yahoo_data/labels.npy')
-
+    train_data = numpy.load(r'/tmp/yahoo_data/training.npy').astype(numpy.float32)
+    train_labels = numpy.load(r'/tmp/yahoo_data/labels.npy').astype(numpy.int64)
 
     test_data = train_data[:TEST_SIZE]
     test_labels = train_labels[:TEST_SIZE]
@@ -126,28 +127,28 @@ def main(argv=None):  # pylint: disable=unused-argument
   # training step using the {feed_dict} argument to the Run() call below.
   train_data_node = tf.placeholder(
       tf.float32,
-      shape=(BATCH_SIZE, ROW_N, COL_N, NUM_CHANNELS))
+      shape=(BATCH_SIZE, IMAGE_SIZE, IMAGE_SIZE, NUM_CHANNELS))
   train_labels_node = tf.placeholder(tf.int64, shape=(BATCH_SIZE))
   eval_data = tf.placeholder(
       tf.float32,
-      shape=(EVAL_BATCH_SIZE, ROW_N, COL_N, NUM_CHANNELS))
+      shape=(EVAL_BATCH_SIZE, IMAGE_SIZE, IMAGE_SIZE, NUM_CHANNELS))
 
   # The variables below hold all the trainable weights. They are passed an
   # initial value which will be assigned when we call:
   # {tf.initialize_all_variables().run()}
   conv1_weights = tf.Variable(
-      tf.truncated_normal([2, 2, NUM_CHANNELS, 32],  # 5x5 filter, depth 32.
+      tf.truncated_normal([5, 5, NUM_CHANNELS, 32],  # 5x5 filter, depth 32.
                           stddev=0.1,
                           seed=SEED))
   conv1_biases = tf.Variable(tf.zeros([32]))
   conv2_weights = tf.Variable(
-      tf.truncated_normal([2, 2, 32, 64],
+      tf.truncated_normal([5, 5, 32, 64],
                           stddev=0.1,
                           seed=SEED))
   conv2_biases = tf.Variable(tf.constant(0.1, shape=[64]))
   fc1_weights = tf.Variable(  # fully connected, depth 512.
       tf.truncated_normal(
-          [4032, 512],
+          [1024, 512],
           stddev=0.1,
           seed=SEED))
   fc1_biases = tf.Variable(tf.constant(0.1, shape=[512]))
@@ -282,6 +283,8 @@ def main(argv=None):  # pylint: disable=unused-argument
               (step, float(step) * BATCH_SIZE / train_size,
                1000 * elapsed_time / EVAL_FREQUENCY))
         print('Minibatch loss: %.3f, learning rate: %.6f' % (l, lr))
+        print('predictions')
+        print(predictions)
         print('Minibatch error: %.1f%%' % error_rate(predictions, batch_labels))
         print('Validation error: %.1f%%' % error_rate(
             eval_in_batches(validation_data, sess), validation_labels))

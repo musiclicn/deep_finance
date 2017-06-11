@@ -45,6 +45,8 @@ class_4_test = os.path.join(data_dir, folder['class_4_test'])
 class_2_dir = os.path.join(data_dir, folder['class_2'])
 training_data_dir = os.path.join(data_dir, '3_training')
 
+log_return = os.path.join(data_dir, 'log_return')
+
 training_start_date = datetime.datetime(2004, 1, 1)
 training_end_date = datetime.datetime(2014, 1, 1)
 
