@@ -13,8 +13,8 @@ class Bar(object):
         self.low = low
         self.trend = trend
         self.cur_trend_days = 1
-        self.pre_same_trend_days = 1
-        self.pre_opposite_trend_days = 1
+        self.pre_same_trend_days = 0
+        self.pre_opposite_trend_days = 0
 
     def __str__(self):
         return 'Bar High:{0:.2f} Low:{1:.2f} Trend:{2}'.format(self.high, self.low, self.trend)
@@ -35,7 +35,10 @@ class Bar(object):
 
 
 def bars_to_dataframe(bars):
-    return pd.DataFrame.from_records((bar.to_dict() for bar in bars), index='time')
+    return pd.DataFrame.from_records((bar.to_dict() for bar in bars),
+                                     index='time',
+                                     columns=['time', 'high', 'low', 'trend', 'cur_trend_days',
+                                              'pre_same_trend_days', 'pre_opposite_trend_days'])
 
 
 class BarRelationship(object):
@@ -133,11 +136,6 @@ def calc_log_change(df):
     df['high_log'] = np.log(df.high) - np.log(df.gravity.shift(1))
     df['low_log'] = np.log(df.low) - np.log(df.gravity.shift(1))
 
-    # df['change%'] = df['Close'].rolling(center=False, window=2).apply(lambda s: s[1] / s[0] - 1)
-    # df['cur_trend_days'] = df.trend.rolling(center=False, window=2).apply(calc_cur_trend_days)
-    # df['open%'] = df['Open'] / df['Close'] - 1
-    # df['high%'] = df['High'] / df['Close'] - 1
-
 
 def process_csv(input_dir, out_dir):
     print input_dir
@@ -150,8 +148,6 @@ def process_csv(input_dir, out_dir):
         file_name = os.path.join(input_dir, f)
         print file_name
         df = pd.DataFrame.from_csv(file_name)
-        # df['log_close'] = np.log(df.Close) - np.log(df.Close.shift(1))
-        # df['log_open'] = np.log(df.Open) - np.log(df.Close.shift(1))
         raw_bars = []
         for index, row in df.iterrows():
             bar = Bar(index, row.High, row.Close, 0)
@@ -164,7 +160,11 @@ def process_csv(input_dir, out_dir):
         df2['gravity'] = (df2.high + df2.low) / 2
 
         calc_log_change(df2)
-        print df2.head(10)
+        del df2['high']
+        del df2['low']
+        del df2['gravity']
+
+        df['label'] = df['gravity_log%'].rolling(center=False, window=1).apply(lable_by_quantile).shift(-1)
         df2.to_csv('/data/out.csv')
         # draw_graph(f, df_result)
         return
