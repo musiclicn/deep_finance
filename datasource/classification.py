@@ -3,7 +3,7 @@ from config import class_5_dir
 import numpy as np
 import pandas as pd
 import os
-from util import get_sp500_tickers
+from stock_symbol import get_sp500_tickers
 
 
 def get_quantile():

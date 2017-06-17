@@ -1,5 +1,5 @@
 from config import *
-from util import get_sp500_tickers
+from stock_symbol import get_sp500_tickers
 from graph import draw_graph
 
 import pandas as pd
@@ -15,12 +15,15 @@ class Bar(object):
         self.cur_trend_days = 1
         self.pre_same_trend_days = 0
         self.pre_opposite_trend_days = 0
+        self.pre_same_trend_strength = 0
+        self.pre_opposite_trend_strength = 0
 
     def __str__(self):
         return 'Bar High:{0:.2f} Low:{1:.2f} Trend:{2}'.format(self.high, self.low, self.trend)
 
     def contains(self, other):
         return self.low <= other.low and self.high >= other.high
+
 
     def to_dict(self):
         return {
@@ -137,6 +140,21 @@ def calc_log_change(df):
     df['low_log'] = np.log(df.low) - np.log(df.gravity.shift(1))
 
 
+def calc_near_2_trend_strength(df):
+    pre_trend = 0
+    trend_strengths = [0, 0]
+    for index, row in df.iterrows():
+        # row.pre_opposite_trend_strength = trend_strengths[-1]
+        # row.pre_same_trend_strength = trend_strengths[-2]
+        df.set_value(index, 'pre_opposite_trend_strength', trend_strengths[-1])
+        df.set_value(index, 'pre_same_trend_strength', trend_strengths[-2])
+        if row.trend != pre_trend:
+            trend_strengths.append(row.gravity_log)
+        else:
+            cur_trend_strength = trend_strengths.pop()
+            trend_strengths.append(cur_trend_strength + row.gravity_log)
+
+
 def process_csv(input_dir, out_dir):
     print input_dir
     if not os.path.exists(out_dir):
@@ -164,7 +182,9 @@ def process_csv(input_dir, out_dir):
         del df2['low']
         del df2['gravity']
 
-        df['label'] = df['gravity_log%'].rolling(center=False, window=1).apply(lable_by_quantile).shift(-1)
+        calc_near_2_trend_strength(df2)
+
+        # df['label'] = df['gravity_log%'].rolling(center=False, window=1).apply(lable_by_quantile).shift(-1)
         df2.to_csv('/data/out.csv')
         # draw_graph(f, df_result)
         return

@@ -1,9 +1,8 @@
 from unittest import TestCase, main
-from six import string_types
-import sys
-import os
 
-from finsymbols import symbols
+from six import string_types
+
+from datasource.finsymbols import symbols
 
 
 class TestSizeOfList(TestCase):

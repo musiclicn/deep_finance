@@ -1,4 +1,4 @@
-from util import get_sp500_tickers
+from stock_symbol import get_sp500_tickers
 import config
 
 import pandas as pd

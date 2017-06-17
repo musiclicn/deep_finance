@@ -1,7 +1,6 @@
-import pprint
-import sys
 from bs4 import BeautifulSoup
-from finsymbols.symbol_helper import *
+
+from .symbol_helper import *
 
 
 def get_sp500_symbols():
