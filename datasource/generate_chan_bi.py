@@ -28,7 +28,6 @@ class Bi(object):
             BiFactory.candidate_bi.pop()
             BiFactory.confirmed_bi.append(self)
 
-
     def merge(self, other_bi):
         assert self.status == BiFormationStatus.TrendConfirmed
         assert other_bi == BiFormationStatus.Candidate
@@ -42,7 +41,7 @@ def generate_chan_bi(bars):
     first = True
     for bar in bars:
         if first:
-            candiate_bi.append(Bi(bar))
+            candidate_bi.append(Bi(bar))
             continue
 
         if len(candidate_bi) >= 1:
@@ -53,14 +52,14 @@ def generate_chan_bi(bars):
         current_bi_status = current_bi.status
         current_bi_trend = current_bi.trend
         if current_bi_status == BiFormationStatus.Candidate:
-            if bi.trend == current_bi_trend:
+            if bar.trend == current_bi_trend:
                 current_bi.append_bar(bar)
             else:# bi candidate fails because bar trend reverse before its trend confirms
                 last_bi = trend_confirmed_bi[-1]
                 last_bi.merge(current_bi)
                 last_bi.append_bar(bar)
         elif current_bi_status == BiFormationStatus.TrendConfirmed:
-            if bi.trend == current_bi_trend:
+            if bar.trend == current_bi_trend:
                 current_bi.append_bar(bar)
             else:# a new bi candidate forms when bar trend reverse
                 candidate_bi.append(Bi(bar))
