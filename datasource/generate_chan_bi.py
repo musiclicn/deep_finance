@@ -54,8 +54,14 @@ class Bi(object):
 
     def merge_weak_bi_pair(self, weak_bi_pair):
         first_bi, second_bi = weak_bi_pair
-        self.append_bar(first_bi.bars)
-        self.append_bar(second_bi.bars)
+        self.append_bars(first_bi.bars)
+        self.append_bars(second_bi.bars)
+
+    def to_line(self):
+        start = (self.bars[0].time, self.bars[0].gravity)
+        end = (self.bars[-1].time, self.bars[-1].gravity)
+        return start, end
+
 
 def generate_first_bi(bar_queue):
     assert len(bar_queue) > 0

@@ -3,8 +3,8 @@ import pandas as pd
 from bokeh.plotting import figure, show, output_file
 
 
-def draw_graph(ticker, df):
-    df["date"] = pd.Index.to_datetime(df.index)
+def draw_graph(ticker, df, lines):
+    df["date"] = pd.to_datetime(df.index)
 
     inc = df.trend == 1
     dec = df.trend == -1
@@ -21,9 +21,17 @@ def draw_graph(ticker, df):
 
     p.segment(df.date, df.high, df.date, df.low, color="black")
     p.vbar(df.date[inc], w, df.open[inc], df.close[inc], fill_color="#D5E1DD", line_color="black")
-    p.vbar(df.date[dec], w, df.open[dec], df.close[dec], fill_color="#F2583E", line_color="black")
+    p.vbar(df.date[dec], w, df.open[dec], df.close[dec], fill_color="#F2583E", line_color="red")
 
-    p.line(df.date[inc], df.open[inc], line_width=3)
+    # p.line(df.date[inc], df.open[inc], line_width=3)
+
+    x = []
+    y = []
+    for point in lines:
+        time, gravity = point
+        x.append(time)
+        y.append(gravity)
+    p.line(x, y, line_width=3)
 
     output_file("candlestick.html", title="candlestick.py example")
 

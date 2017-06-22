@@ -163,6 +163,14 @@ def process_csv(file_path):
 
     calc_gravity_and_log_change(processed_bars)
     ended_bi, trend_confirmed_bi = generate_bi(processed_bars)
+    print(ended_bi)
+    print(len(ended_bi))
+    print(trend_confirmed_bi)
+
+    lines = []
+    for bi in ended_bi:
+        start, end = bi.to_line()
+        lines.append(start)
 
     df2 = bars_to_dataframe(processed_bars)
     df2['gravity'] = (df2.high + df2.low) / 2
@@ -176,7 +184,7 @@ def process_csv(file_path):
     ticker = os.path.basename(file_path).split('.')[0]
     df2.to_csv(os.path.join(data_dir, ticker + '_processed.csv'))
 
-    draw_graph(ticker, df2)
+    draw_graph(ticker, df2, lines)
 
 
 def process_folder(input_dir, out_dir, func):
