@@ -12,6 +12,8 @@ class Bar(object):
         self.high = high
         self.low = low
         self.trend = trend
+        self.gravity = 0
+        self.gravity_log_chg = 0
         self.cur_trend_days = 1
         self.pre_same_trend_days = 0
         self.pre_opposite_trend_days = 0
@@ -23,7 +25,6 @@ class Bar(object):
 
     def contains(self, other):
         return self.low <= other.low and self.high >= other.high
-
 
     def to_dict(self):
         return {

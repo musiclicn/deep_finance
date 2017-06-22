@@ -1,6 +1,7 @@
 from config import *
 from stock_symbol import get_sp500_tickers
 from graph import draw_graph
+from generate_chan_bi import generate_bi
 
 import pandas as pd
 import numpy as np
@@ -11,6 +12,8 @@ class Bar(object):
         self.time = time
         self.high = high
         self.low = low
+        self.gravity = 0
+        self.gravity_log = 0
         self.trend = trend
         self.cur_trend_days = 1
         self.pre_same_trend_days = 0
@@ -137,6 +140,16 @@ def calc_log_change(df):
     df['low_log'] = np.log(df.low) - np.log(df.gravity.shift(1))
 
 
+def calc_gravity_and_log_change(processed_bars):
+    first_bar = processed_bars[0]
+    first_bar.gravity = (first_bar.high + first_bar.low) / 2
+    pre_gravity = first_bar.gravity
+    for bar in processed_bars[1:]:
+        bar.gravity = (bar.high + bar.low) / 2
+        bar.gravity_log = np.log(bar.gravity / pre_gravity)
+        pre_gravity = bar.gravity
+
+
 def process_csv(file_path):
     df = pd.DataFrame.from_csv(file_path)
     raw_bars = []
@@ -147,6 +160,10 @@ def process_csv(file_path):
     processed_bars = process_bars(raw_bars)
     # print 'processed_bars:', processed_bars
     # print processed_bars[0]
+
+    calc_gravity_and_log_change(processed_bars)
+    ended_bi, trend_confirmed_bi = generate_bi(processed_bars)
+
     df2 = bars_to_dataframe(processed_bars)
     df2['gravity'] = (df2.high + df2.low) / 2
 
@@ -175,7 +192,7 @@ def process_folder(input_dir, out_dir, func):
 
 def main():
     print 'pandas version:', pd.__version__
-    tickers = get_sp500_tickers()
+    # tickers = get_sp500_tickers()
     # download_stock_daily_csv(tickers, test_dir, test_start_date, test_end_date)
     process_csv(os.path.join(test_dir, 'AAPL.csv'))
 
