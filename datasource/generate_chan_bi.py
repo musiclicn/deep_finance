@@ -164,7 +164,12 @@ def find_reversed_trend_confirmed_bi(bar_queue, pre_trend_confirmed_bi):
         return trend_reversed_bi
     else:
         weak_bi_pairs = []
-        reversed_bi = find_reversed_bi_and_weak_bi_pairs(bar_queue, pre_trend_confirmed_bi, weak_bi_pairs)
+        reversed_bi = None
+        try:
+            reversed_bi = find_reversed_bi_and_weak_bi_pairs(bar_queue, pre_trend_confirmed_bi, weak_bi_pairs)
+        except IndexError:
+            print("finish bar deque")
+            return
         # merge weak bi pairs
         print ('weak bi pairs num: ', len(weak_bi_pairs))
         weak_bi_pairs_deque = deque(weak_bi_pairs)
