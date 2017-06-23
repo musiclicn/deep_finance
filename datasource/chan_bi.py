@@ -158,15 +158,10 @@ def merge_weak_bi_pair(pre_bi, reversed_bi, weak_bi_pair):
 
 
 # need fix
-def process_weak_bi_pairs(weak_bi_pairs, reversed_bi, pre_trend_confirmed_bi):
-    pass
-    # weak_bi_pairs_deque = deque(weak_bi_pairs)
-    # while len(weak_bi_pairs_deque) > 0:
-    #     first_pair = weak_bi_pairs_deque.popleft()
-    #     merge_weak_bi_pair(pre_trend_confirmed_bi, reversed_bi, first_pair)
-    #     if len(weak_bi_pairs_deque) > 0:
-    #         last_pair = weak_bi_pairs_deque.pop()
-    #         merge_weak_bi_pair(pre_trend_confirmed_bi, reversed_bi, last_pair)
+def process_weak_bi_pairs(weak_bi_pairs, reversed_bi, pre_bi):
+    # merge all to previous bi
+    for weak_bi_pair in weak_bi_pairs:
+        pre_bi.merge_weak_bi_pair(weak_bi_pair)
 
 
 def find_reversed_trend_confirmed_bi(bar_queue, pre_trend_confirmed_bi):
