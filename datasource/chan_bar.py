@@ -171,6 +171,7 @@ def process_csv(file_path):
     for bi in ended_bi:
         start, end = bi.to_line()
         lines.append(start)
+        lines.append(end)
 
     df2 = bars_to_dataframe(processed_bars)
     df2['gravity'] = (df2.high + df2.low) / 2

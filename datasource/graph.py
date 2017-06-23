@@ -1,6 +1,13 @@
 from math import pi
 import pandas as pd
 from bokeh.plotting import figure, show, output_file
+from itertools import izip
+
+
+def pairwise(iterable):
+    "s -> (s0, s1), (s2, s3), (s4, s5), ..."
+    a = iter(iterable)
+    return izip(a, a)
 
 
 def draw_graph(ticker, df, lines):
@@ -27,11 +34,12 @@ def draw_graph(ticker, df, lines):
 
     x = []
     y = []
-    for point in lines:
-        time, gravity = point
-        x.append(time)
-        y.append(gravity)
-    p.line(x, y, line_width=3)
+    for start, end in pairwise(lines):
+        start_time, start_price = start
+        end_time, end_price = end
+        x.append([start_time, end_time])
+        y.append([start_price, end_price])
+    p.multi_line(x, y, line_width=3)
 
     output_file("candlestick.html", title="candlestick.py example")
 
