@@ -1,7 +1,7 @@
 from config import *
 from stock_symbol import get_sp500_tickers
 from graph import draw_graph
-from generate_chan_bi import generate_bi
+from chan_bi import generate_bi
 
 import pandas as pd
 import numpy as np
