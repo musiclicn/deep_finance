@@ -203,7 +203,7 @@ def main():
     print 'pandas version:', pd.__version__
     # tickers = get_sp500_tickers()
     # download_stock_daily_csv(tickers, test_dir, test_start_date, test_end_date)
-    process_csv(os.path.join(test_dir, 'AAPL.csv'))
+    process_csv(os.path.join(test_dir, 'QCOM.csv'))
 
 if __name__ == "__main__":
     main()

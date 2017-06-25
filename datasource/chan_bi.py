@@ -15,7 +15,7 @@ class BiFactory(object):
 
 class WeakBi(object):
     def __init__(self, bars):
-        assert len(bars) > 0
+        # assert len(bars) > 0
         self.bars = bars
         self.trend = bars[0].trend
 
