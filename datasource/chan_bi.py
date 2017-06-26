@@ -89,12 +89,18 @@ def generate_first_bi(bar_queue):
             bar_temp.append(bar)
 
 
-def determine_trend_reversed(bar_queue, pre_bi_trend):
+def try_find_trend_reversed_bi(bar_queue, pre_bi_trend):
     if len(bar_queue) < 3:
-        return False
-    if bar_queue[0].trend != pre_bi_trend and bar_queue[1].trend == bar_queue[0].trend and bar_queue[2].trend == bar_queue[0].trend:
-        return True
-    return False
+        return False, None
+    if bar_queue[0].trend != pre_bi_trend and bar_queue[1].trend == bar_queue[0].trend \
+            and bar_queue[2].trend == bar_queue[0].trend:
+        return True, find_trend_reversed_bi(bar_queue, pre_bi_trend)
+    return False, None
+    # elif len(bar_queue) >= 5:
+    #     if bar_queue[0].trend != pre_bi_trend and bar_queue[1].trend == bar_queue[0].trend and \
+    #                     bar_queue[2].trend != bar_queue[0].trend and bar_queue[3].trend == bar_queue[0].trend and \
+    #                     bar_queue[4].trend == bar_queue[0].trend:
+    #         return True
 
 
 def calculate_weak_bi_strength(weak_bi_pair):
@@ -133,9 +139,9 @@ def find_weak_bi_pair(bar_queue):
 
 
 def find_reversal_bi_and_weak_bi_pairs(bar_queue, pre_bi, weak_bi_pairs):
-    is_trend_reversed = determine_trend_reversed(bar_queue, pre_bi.trend)
+    is_trend_reversed, reversed_bi = try_find_trend_reversed_bi(bar_queue, pre_bi.trend)
     if is_trend_reversed:
-        return find_trend_reversed_bi(bar_queue, pre_bi.trend)
+        return reversed_bi
     else:
         weak_bi_pair = find_weak_bi_pair(bar_queue)
         weak_bi_pairs.append(weak_bi_pair)
@@ -172,9 +178,8 @@ def find_reversed_trend_confirmed_bi(bar_queue, pre_trend_confirmed_bi):
     # easiest way is to determine the sum of strength of all these pairs and merge to current bi or next bi depending on trend
     pre_bi_trend = pre_trend_confirmed_bi.trend
 
-    is_trend_reversed = determine_trend_reversed(bar_queue, pre_bi_trend)
+    is_trend_reversed, trend_reversed_bi = try_find_trend_reversed_bi(bar_queue, pre_bi_trend)
     if is_trend_reversed:
-        trend_reversed_bi = find_trend_reversed_bi(bar_queue, pre_bi_trend)
         return trend_reversed_bi
     else:
         weak_bi_pairs = []
