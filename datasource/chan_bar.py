@@ -110,12 +110,12 @@ def process_bars(bars):
         relationship = determine_bar_relationship(bar1, bar2)
         if relationship in [BarRelationship.LEFT_CONTAINS_RIGHT, BarRelationship.RIGHT_CONTAINS_LEFT]:
             new_bar = merge_bars(bar1, bar2, relationship)
-            pre_bar = processed_bars[-1]
+            if len(processed_bars) > 0:
+                pre_bar = processed_bars[-1]
+                if new_bar.trend == pre_bar.trend:
+                    new_bar.cur_trend_days = pre_bar.cur_trend_days + 1
             processed_bars.append(new_bar)
-            if new_bar.trend == pre_bar.trend:
-                new_bar.cur_trend_days = pre_bar.cur_trend_days + 1
             set_prev_trend_days(new_bar, processed_bars)
-
         elif relationship == BarRelationship.UP_TREND:
             processed_bars.append(bar1)
             bar2.trend = 1
@@ -203,7 +203,7 @@ def main():
     print 'pandas version:', pd.__version__
     # tickers = get_sp500_tickers()
     # download_stock_daily_csv(tickers, test_dir, test_start_date, test_end_date)
-    process_csv(os.path.join(test_dir, 'QCOM.csv'))
+    process_csv(os.path.join(test_dir, 'AMZN.csv'))
 
 if __name__ == "__main__":
     main()
