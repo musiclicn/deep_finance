@@ -63,30 +63,16 @@ class Bi(object):
         return start, end
 
 
-def generate_first_bi(bar_queue):
-    assert len(bar_queue) > 0
-    bar_temp = []
-    bar = bar_queue.popleft()
-    bar_temp.append(bar)
-    while len(bar_queue) > 0:
-        bar = bar_queue.popleft()
-        prev_bar_trend = bar_temp[-1].trend
-        if bar.trend != prev_bar_trend:
-            bar_temp = [bar]
-        elif len(bar_temp) == 3:
-            break
-        else:
-            bar_temp.append(bar)
+class PhantomBi(Bi):
+    def __init__(self, trend):
+        self.trend = trend
+        self.bars = []
 
-    # continue until bar trend reverse
-    bi_trend = bar_temp[-1].trend
-    while len(bar_queue) > 0:
-        bar = bar_queue.popleft()
-        if bar.trend != bi_trend:
-            bar_queue.appendleft(bar)
-            return Bi(bar_temp)
-        else:
-            bar_temp.append(bar)
+
+def find_first_and_second_bi(bar_queue):
+    phantom_down_bi = PhantomBi(-1)
+    reversed_bi = find_reversed_trend_confirmed_bi(bar_queue, phantom_down_bi)
+    return phantom_down_bi, reversed_bi
 
 
 def try_find_trend_reversed_bi(bar_queue, pre_bi_trend):
@@ -212,8 +198,9 @@ def generate_bi(bars):
     ended_bi = []
     trend_confirmed_bi = []
     bar_queue = deque(bars)
-    first_bi = generate_first_bi(bar_queue)
+    first_bi, second_bi = find_first_and_second_bi(bar_queue)
     trend_confirmed_bi.append(first_bi)
+    trend_confirmed_bi.append(second_bi)
 
     while len(bar_queue) > 0:
         pre_trend_confirmed_bi = trend_confirmed_bi[-1]
@@ -224,4 +211,4 @@ def generate_bi(bars):
         ended_bi.append(trend_confirmed_bi.pop())
         trend_confirmed_bi.append(trend_reversed_bi)
 
-    return  ended_bi, trend_confirmed_bi
+    return ended_bi, trend_confirmed_bi
