@@ -95,12 +95,12 @@ def try_find_trend_reversed_bi(bar_queue, pre_bi_trend):
     if bar_queue[0].trend != pre_bi_trend and bar_queue[1].trend == bar_queue[0].trend \
             and bar_queue[2].trend == bar_queue[0].trend:
         return True, find_trend_reversed_bi(bar_queue, pre_bi_trend)
+    elif len(bar_queue) >= 5:
+        if bar_queue[0].trend != pre_bi_trend and bar_queue[1].trend == bar_queue[0].trend and \
+                        bar_queue[2].trend != bar_queue[0].trend and bar_queue[3].trend == bar_queue[0].trend and \
+                        bar_queue[4].trend == bar_queue[0].trend:
+            return True, find_4_out_of_5_reversed_bi(bar_queue, pre_bi_trend)
     return False, None
-    # elif len(bar_queue) >= 5:
-    #     if bar_queue[0].trend != pre_bi_trend and bar_queue[1].trend == bar_queue[0].trend and \
-    #                     bar_queue[2].trend != bar_queue[0].trend and bar_queue[3].trend == bar_queue[0].trend and \
-    #                     bar_queue[4].trend == bar_queue[0].trend:
-    #         return True
 
 
 def calculate_weak_bi_strength(weak_bi_pair):
@@ -115,6 +115,21 @@ def find_trend_reversed_bi(bar_queue, pre_bi_trend):
             bars_temp.append(bar_queue.popleft())
         else:
             assert len(bars_temp) >= 3
+            return Bi(bars_temp)
+
+
+def find_4_out_of_5_reversed_bi(bar_queue, pre_bi_trend):
+    cnt = 5
+    bars_temp = []
+    while cnt > 0 and len(bar_queue) > 0:
+        bars_temp.append(bar_queue.popleft())
+        cnt-=1
+
+    while len(bar_queue) > 0:
+        if bar_queue[0].trend != pre_bi_trend:
+            bars_temp.append(bar_queue.popleft())
+        else:
+            assert len(bars_temp) >= 5
             return Bi(bars_temp)
 
 
