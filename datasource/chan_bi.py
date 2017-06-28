@@ -63,38 +63,30 @@ class Bi(object):
         return start, end
 
 
-def generate_first_bi(bar_queue):
-    assert len(bar_queue) > 0
-    bar_temp = []
-    bar = bar_queue.popleft()
-    bar_temp.append(bar)
-    while len(bar_queue) > 0:
-        bar = bar_queue.popleft()
-        prev_bar_trend = bar_temp[-1].trend
-        if bar.trend != prev_bar_trend:
-            bar_temp = [bar]
-        elif len(bar_temp) == 3:
-            break
-        else:
-            bar_temp.append(bar)
-
-    # continue until bar trend reverse
-    bi_trend = bar_temp[-1].trend
-    while len(bar_queue) > 0:
-        bar = bar_queue.popleft()
-        if bar.trend != bi_trend:
-            bar_queue.appendleft(bar)
-            return Bi(bar_temp)
-        else:
-            bar_temp.append(bar)
+class PhantomBi(Bi):
+    def __init__(self, trend):
+        self.trend = trend
+        self.bars = []
 
 
-def determine_trend_reversed(bar_queue, pre_bi_trend):
+def find_first_and_second_bi(bar_queue):
+    phantom_down_bi = PhantomBi(-1)
+    reversed_bi = find_reversed_trend_confirmed_bi(bar_queue, phantom_down_bi)
+    return phantom_down_bi, reversed_bi
+
+
+def try_find_trend_reversed_bi(bar_queue, pre_bi_trend):
     if len(bar_queue) < 3:
-        return False
-    if bar_queue[0].trend != pre_bi_trend and bar_queue[1].trend == bar_queue[0].trend and bar_queue[2].trend == bar_queue[0].trend:
-        return True
-    return False
+        return False, None
+    if bar_queue[0].trend != pre_bi_trend and bar_queue[1].trend == bar_queue[0].trend \
+            and bar_queue[2].trend == bar_queue[0].trend:
+        return True, find_trend_reversed_bi(bar_queue, pre_bi_trend)
+    elif len(bar_queue) >= 5:
+        if bar_queue[0].trend != pre_bi_trend and bar_queue[1].trend == bar_queue[0].trend and \
+                        bar_queue[2].trend != bar_queue[0].trend and bar_queue[3].trend == bar_queue[0].trend and \
+                        bar_queue[4].trend == bar_queue[0].trend:
+            return True, find_4_out_of_5_reversed_bi(bar_queue, pre_bi_trend)
+    return False, None
 
 
 def calculate_weak_bi_strength(weak_bi_pair):
@@ -109,6 +101,21 @@ def find_trend_reversed_bi(bar_queue, pre_bi_trend):
             bars_temp.append(bar_queue.popleft())
         else:
             assert len(bars_temp) >= 3
+            return Bi(bars_temp)
+
+
+def find_4_out_of_5_reversed_bi(bar_queue, pre_bi_trend):
+    cnt = 5
+    bars_temp = []
+    while cnt > 0 and len(bar_queue) > 0:
+        bars_temp.append(bar_queue.popleft())
+        cnt-=1
+
+    while len(bar_queue) > 0:
+        if bar_queue[0].trend != pre_bi_trend:
+            bars_temp.append(bar_queue.popleft())
+        else:
+            assert len(bars_temp) >= 5
             return Bi(bars_temp)
 
 
@@ -133,9 +140,9 @@ def find_weak_bi_pair(bar_queue):
 
 
 def find_reversal_bi_and_weak_bi_pairs(bar_queue, pre_bi, weak_bi_pairs):
-    is_trend_reversed = determine_trend_reversed(bar_queue, pre_bi.trend)
+    is_trend_reversed, reversed_bi = try_find_trend_reversed_bi(bar_queue, pre_bi.trend)
     if is_trend_reversed:
-        return find_trend_reversed_bi(bar_queue, pre_bi.trend)
+        return reversed_bi
     else:
         weak_bi_pair = find_weak_bi_pair(bar_queue)
         weak_bi_pairs.append(weak_bi_pair)
@@ -172,9 +179,8 @@ def find_reversed_trend_confirmed_bi(bar_queue, pre_trend_confirmed_bi):
     # easiest way is to determine the sum of strength of all these pairs and merge to current bi or next bi depending on trend
     pre_bi_trend = pre_trend_confirmed_bi.trend
 
-    is_trend_reversed = determine_trend_reversed(bar_queue, pre_bi_trend)
+    is_trend_reversed, trend_reversed_bi = try_find_trend_reversed_bi(bar_queue, pre_bi_trend)
     if is_trend_reversed:
-        trend_reversed_bi = find_trend_reversed_bi(bar_queue, pre_bi_trend)
         return trend_reversed_bi
     else:
         weak_bi_pairs = []
@@ -192,8 +198,9 @@ def generate_bi(bars):
     ended_bi = []
     trend_confirmed_bi = []
     bar_queue = deque(bars)
-    first_bi = generate_first_bi(bar_queue)
+    first_bi, second_bi = find_first_and_second_bi(bar_queue)
     trend_confirmed_bi.append(first_bi)
+    trend_confirmed_bi.append(second_bi)
 
     while len(bar_queue) > 0:
         pre_trend_confirmed_bi = trend_confirmed_bi[-1]
@@ -204,4 +211,4 @@ def generate_bi(bars):
         ended_bi.append(trend_confirmed_bi.pop())
         trend_confirmed_bi.append(trend_reversed_bi)
 
-    return  ended_bi, trend_confirmed_bi
+    return ended_bi, trend_confirmed_bi
