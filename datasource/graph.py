@@ -1,16 +1,24 @@
-from config import graph_dir
 from math import pi
 import pandas as pd
 from bokeh.plotting import figure, show, output_file
 from bokeh.io import export_png
 from itertools import izip
-import os
 
 
 def pairwise(iterable):
     "s -> (s0, s1), (s2, s3), (s4, s5), ..."
     a = iter(iterable)
     return izip(a, a)
+
+
+def generate_colors_from_price(y):
+    colors = []
+    for price1, price2 in y:
+        if price1 <= price2:
+            colors.append('navy')
+        else:
+            colors.append('red')
+    return colors
 
 
 def draw_graph(ticker, df, lines):
@@ -25,9 +33,9 @@ def draw_graph(ticker, df, lines):
 
     TOOLS = "pan,wheel_zoom,box_zoom,reset,save"
 
-    p = figure(x_axis_type="datetime", tools=TOOLS, plot_width=1000, title = ticker + " Candlestick")
+    p = figure(x_axis_type="datetime", tools=TOOLS, plot_width=1000, title=ticker + " Candlestick")
     p.xaxis.major_label_orientation = pi/4
-    p.grid.grid_line_alpha=0.3
+    p.grid.grid_line_alpha = 0.3
 
     p.segment(df.date, df.high, df.date, df.low, color="black")
     p.vbar(df.date[inc], w, df.open[inc], df.close[inc], fill_color="#D5E1DD", line_color="black")
@@ -42,10 +50,11 @@ def draw_graph(ticker, df, lines):
         end_time, end_price = end
         x.append([start_time, end_time])
         y.append([start_price, end_price])
-    p.multi_line(x, y, line_width=3)
+
+    colors = generate_colors_from_price(y)
+    p.multi_line(x, y, line_color=colors, line_width=3)
 
     # output_file("candlestick.html", title="candlestick.py example")
-    os.chdir(graph_dir)
     export_png(p, filename=ticker + '.png')
 
     # show(p)
