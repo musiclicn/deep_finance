@@ -3,6 +3,7 @@ from stock_symbol import get_sp500_tickers
 from graph import draw_graph
 from chan_bi import generate_bi
 
+import datetime
 import pandas as pd
 import numpy as np
 
@@ -20,7 +21,8 @@ class Bar(object):
         self.pre_opposite_trend_days = 0
 
     def __str__(self):
-        return 'Bar High:{0:.2f} Low:{1:.2f} Trend:{2}'.format(self.high, self.low, self.trend)
+        return 'Bar {} High:{:.2f} Low:{:.2f} Trend:{}'.format(
+            self.time, self.high, self.low, self.trend)
 
     def contains(self, other):
         return self.low <= other.low and self.high >= other.high
@@ -54,7 +56,7 @@ class BarRelationship(object):
 def determine_trend(bar1, bar2):
     if bar2.high >= bar1.high and bar2.low >= bar1.low:
         return BarRelationship.UP_TREND
-    elif bar2.high < bar1.high and bar2.low < bar1.low:
+    elif bar2.high <= bar1.high and bar2.low <= bar1.low:
         return BarRelationship.DOWN_TREND
     raise Exception('no trend here')
 
@@ -99,7 +101,8 @@ def set_prev_trend_days(bar, processed_bars):
             break
 
 
-def process_bars(bars):
+def process_bars(raw_bars):
+    bars = [bar for bar in raw_bars if not np.isnan(bar.high) and  not np.isnan(bar.low)]
     processed_bars = []
     first_bar = bars[0]
     processed_bars.append(Bar(first_bar.time, first_bar.high, first_bar.low, 1))
@@ -163,9 +166,9 @@ def process_csv(file_path):
 
     calc_gravity_and_log_change(processed_bars)
     ended_bi, trend_confirmed_bi = generate_bi(processed_bars)
-    print(ended_bi)
-    print(len(ended_bi))
-    print(trend_confirmed_bi)
+    # print(ended_bi)
+    # print(len(ended_bi))
+    # print(trend_confirmed_bi)
 
     lines = []
     for bi in ended_bi:
@@ -188,13 +191,13 @@ def process_csv(file_path):
     draw_graph(ticker, df2, lines)
 
 
-def process_folder(input_dir, out_dir, func):
-    print input_dir
+def apply_func_to_folder_files(input_dir, out_dir, func):
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
 
     files = os.listdir(input_dir)
     for f in files:
+        print("processing {}".format(f))
         file_path = os.path.join(input_dir, f)
         func(file_path)
 
@@ -203,7 +206,8 @@ def main():
     print 'pandas version:', pd.__version__
     # tickers = get_sp500_tickers()
     # download_stock_daily_csv(tickers, test_dir, test_start_date, test_end_date)
-    process_csv(os.path.join(test_dir, 'AMZN.csv'))
+    process_csv(os.path.join(test_dir, 'ANSS.csv'))
+    # apply_func_to_folder_files(test_dir, graph_dir, process_csv)
 
 if __name__ == "__main__":
     main()
