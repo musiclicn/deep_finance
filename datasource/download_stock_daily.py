@@ -1,3 +1,12 @@
+"""
+$ git clone https://github.com/rgkimball/pandas-datareader
+$ cd pandas-datareader
+$ git checkout fix-yahoo
+$ pip install -e .
+
+import pandas_datareader as pdr
+print(pdr.__version__)  # Make sure it is '0.4.1'.
+"""
 from config import *
 from stock_symbol import get_sp500_tickers
 from classification import get_quantile, label
@@ -7,7 +16,6 @@ import pandas as pd
 import numpy as np
 import os
 import pandas_datareader as pd_data
-print pd_data.__version__
 
 
 def download_stock_daily_csv(tickers, out_dir, start_date, end_date):
@@ -126,6 +134,7 @@ def calc_log_return(input_dir, out_dir):
         file_path = os.path.join(out_dir, f)
         df.to_csv(file_path)
         return
+
 
 def main():
     print 'pandas version:', pd.__version__

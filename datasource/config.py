@@ -1,6 +1,6 @@
 import platform
 import os
-import datetime
+from datetime import datetime, timedelta
 """
 config = {
     "mysql": {
@@ -48,11 +48,11 @@ training_data_dir = os.path.join(data_dir, '3_training')
 
 log_return = os.path.join(data_dir, 'log_return')
 
-training_start_date = datetime.datetime(2004, 1, 1)
-training_end_date = datetime.datetime(2014, 1, 1)
+training_start_date = datetime(2004, 1, 1)
+training_end_date = datetime(2014, 1, 1)
 
-test_start_date = datetime.datetime(2015, 1, 1)
-test_end_date = datetime.datetime(2017, 6, 27)
+test_start_date = datetime.today() - timedelta(days=365 * 2)
+test_end_date = datetime.today()
 
 quantile_10 = [-0.020701544239449997, -0.011687439994779999, -0.0065986042970069998, -0.0027777731480319997,
                0.00054701923373000002, 0.0039177146655779999, 0.0079060633726499973, 0.013143195457900003,
