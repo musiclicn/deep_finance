@@ -1,7 +1,10 @@
+from config import graph_dir
 from math import pi
 import pandas as pd
 from bokeh.plotting import figure, show, output_file
+from bokeh.io import export_png
 from itertools import izip
+import os
 
 
 def pairwise(iterable):
@@ -41,6 +44,8 @@ def draw_graph(ticker, df, lines):
         y.append([start_price, end_price])
     p.multi_line(x, y, line_width=3)
 
-    output_file("candlestick.html", title="candlestick.py example")
+    # output_file("candlestick.html", title="candlestick.py example")
+    os.chdir(graph_dir)
+    export_png(p, filename=ticker + '.png')
 
-    show(p)
+    # show(p)

@@ -37,6 +37,7 @@ else:
     data_dir = directory['linux']
 daily_dir = os.path.join(data_dir, folder['raw_data'])
 test_dir = os.path.join(data_dir, folder['test_data'])
+graph_dir = os.path.join(data_dir, 'graph')
 macd_dir = os.path.join(data_dir, folder['macd_data'])
 
 class_5_dir = os.path.join(data_dir, folder['class_5'])
@@ -50,8 +51,8 @@ log_return = os.path.join(data_dir, 'log_return')
 training_start_date = datetime.datetime(2004, 1, 1)
 training_end_date = datetime.datetime(2014, 1, 1)
 
-test_start_date = datetime.datetime(2014, 1, 1)
-test_end_date = datetime.datetime(2016, 1, 1)
+test_start_date = datetime.datetime(2015, 1, 1)
+test_end_date = datetime.datetime(2017, 6, 27)
 
 quantile_10 = [-0.020701544239449997, -0.011687439994779999, -0.0065986042970069998, -0.0027777731480319997,
                0.00054701923373000002, 0.0039177146655779999, 0.0079060633726499973, 0.013143195457900003,

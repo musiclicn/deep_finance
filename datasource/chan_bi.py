@@ -120,7 +120,6 @@ def find_4_out_of_5_reversed_bi(bar_queue, pre_bi_trend):
 
 
 def find_weak_bi_pair(bar_queue):
-    print('deque size: ', len(bar_queue))
     first_bi_trend = bar_queue[0].trend
     first_bi_bars = []
     second_bi_bars = []
@@ -186,11 +185,11 @@ def find_reversed_trend_confirmed_bi(bar_queue, pre_trend_confirmed_bi):
         weak_bi_pairs = []
         try:
             reversed_bi = find_reversal_bi_and_weak_bi_pairs(bar_queue, pre_trend_confirmed_bi, weak_bi_pairs)
-            print ('weak bi pairs num: ', len(weak_bi_pairs))
+            #print ('weak bi pairs num: ', len(weak_bi_pairs))
             process_weak_bi_pairs(weak_bi_pairs, reversed_bi, pre_trend_confirmed_bi)
             return reversed_bi
         except IndexError:
-            print("finish bar deque")
+            #print("finish bar deque")
             return
 
 

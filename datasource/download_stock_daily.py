@@ -2,11 +2,12 @@ from config import *
 from stock_symbol import get_sp500_tickers
 from classification import get_quantile, label
 
-from pandas_datareader.data import GoogleDailyReader
+from pandas_datareader.data import YahooDailyReader
 import pandas as pd
 import numpy as np
 import os
-import datetime
+import pandas_datareader as pd_data
+print pd_data.__version__
 
 
 def download_stock_daily_csv(tickers, out_dir, start_date, end_date):
@@ -20,7 +21,7 @@ def download_stock_daily_csv(tickers, out_dir, start_date, end_date):
             continue
         try:
             print "Downloading " + ticker
-            df = GoogleDailyReader(ticker, start_date, end_date).read()
+            df = YahooDailyReader(ticker, start_date, end_date).read()
             df.to_csv(file_name)
         except IOError as error:
             print error
