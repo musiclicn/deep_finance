@@ -153,7 +153,7 @@ def calc_gravity_and_log_change(processed_bars):
         pre_gravity = bar.gravity
 
 
-def process_csv(file_path):
+def process_csv(file_path, out_dir):
     df = pd.DataFrame.from_csv(file_path)
     raw_bars = []
     for index, row in df.iterrows():
@@ -187,27 +187,34 @@ def process_csv(file_path):
     # df['label'] = df['gravity_log%'].rolling(center=False, window=1).apply(lable_by_quantile).shift(-1)
     ticker = os.path.basename(file_path).split('.')[0]
     df2.to_csv(os.path.join(data_dir, ticker + '_processed.csv'))
-
+    os.chdir(out_dir)
     draw_graph(ticker, df2, lines)
 
 
-def apply_func_to_folder_files(input_dir, out_dir, func):
-    if not os.path.exists(out_dir):
-        os.makedirs(out_dir)
+def make_sure_folder_exists(folder):
+    if not os.path.exists(folder):
+        os.makedirs(folder)
 
+
+def apply_func_to_folder_files(input_dir, out_dir, func):
+    make_sure_folder_exists(out_dir)
+    os.chdir(out_dir)
     files = os.listdir(input_dir)
     for f in files:
         print("processing {}".format(f))
         file_path = os.path.join(input_dir, f)
-        func(file_path)
+        func(file_path, out_dir)
 
 
 def main():
     print 'pandas version:', pd.__version__
     # tickers = get_sp500_tickers()
     # download_stock_daily_csv(tickers, test_dir, test_start_date, test_end_date)
-    process_csv(os.path.join(test_dir, 'ANSS.csv'))
-    # apply_func_to_folder_files(test_dir, graph_dir, process_csv)
+    today = datetime.datetime.today()
+    output_dir = os.path.join(data_dir,  today.strftime('%Y%m%d'))
+    make_sure_folder_exists(output_dir)
+    # process_csv(os.path.join(test_dir, 'AAPL.csv'), output_dir)
+    apply_func_to_folder_files(test_dir, output_dir, process_csv)
 
 if __name__ == "__main__":
     main()
