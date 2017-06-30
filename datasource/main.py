@@ -40,18 +40,31 @@ def download_tickers_and_run_analysis(tickers):
     apply_func_to_folder_files(input_data_dir, graph_out_dir, process_csv)
 
 # download_tickers_and_run_analysis(['WEAT', 'USO', 'UNG'])
-# download_tickers_and_run_analysis(['BIDU', 'TWTR', 'S', 'DDD', 'DB', 'QCOM', 'ASHR', 'MCHI', 'CRM', 'KR', 'COST', 'MU', 'UAA', 'CHK', 'UBS', 'VLO', 'GRPN', 'WEAT', 'UNG'])
+# download_tickers_and_run_analysis(['BIDU', 'TWTR', 'S', 'DDD', 'DB', 'QCOM', 'ASHR', 'MCHI', 'CRM', 'KR', 'COST',
+# 'MU', 'UAA', 'CHK', 'UBS', 'VLO', 'GRPN', 'WEAT', 'UNG'])
 # download_tickers_and_run_analysis(['TSLA'])
 
-tickers = get_sp500_tickers()
 
-_30_min_dir = path.join(data_dir, get_today(), '30min')
-_30_min_input_dir = path.join(_30_min_dir, 'input')
-make_sure_folder_exists(_30_min_input_dir)
-for ticker in tickers:
-    download_30_min(ticker, _30_min_input_dir)
+def download_30min_and_run_analysis(tickers, request_id=None):
+    if request_id is None:
+        request_id = generate_request_id(tickers)
+    start_date = datetime.today() - timedelta(days=365 * 2)
+    end_date = datetime.today()
 
-_30_min_graph_dir = path.join(_30_min_dir, 'graph')
-make_sure_folder_exists(_30_min_graph_dir)
-apply_func_to_folder_files(_30_min_input_dir, _30_min_graph_dir, process_csv)
+    print("request id: {}".format(request_id))
+    request_id_dir = path.join(data_dir, request_id)
+    make_sure_folder_exists(request_id_dir)
+    input_data_dir = path.join(request_id_dir, 'data')
+    make_sure_folder_exists(input_data_dir)
+    for ticker in tickers:
+        download_30_min(ticker, input_data_dir)
+    download_stock_daily_csv(tickers, input_data_dir, start_date, end_date)
+    # process_csv(os.path.join(test_dir, 'AAPL.csv'), output_dir)
+    graph_out_dir = path.join(request_id_dir, 'graph')
+    make_sure_folder_exists(graph_out_dir)
+    apply_func_to_folder_files(input_data_dir, graph_out_dir, process_csv)
 
+
+# download_30min_and_run_analysis(['AAPL'], 'AAPL_30min')
+spx_tickers = get_sp500_tickers()
+download_30min_and_run_analysis(spx_tickers, 'SPY500_30min')

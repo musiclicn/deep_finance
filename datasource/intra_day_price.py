@@ -57,7 +57,7 @@ def download_google_intraday_to_csv(ticker, out_dir):
 
 
 def download_30_min(ticker, out_dir):
-    df = get_google_finance_intraday(ticker, period=30 * 60, days=3 * 30)
+    df = get_google_finance_intraday(ticker, period=30 * 60, days=1 * 22)
     # print(df.shape)
     df.to_csv(path.join(out_dir, ticker + '.csv'))
 
