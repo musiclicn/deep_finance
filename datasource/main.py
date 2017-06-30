@@ -1,5 +1,3 @@
-from config import *
-from stock_symbol import get_sp500_tickers
 from download_stock_daily import download_stock_daily_csv
 from chan_bar import *
 
