@@ -1,5 +1,6 @@
 from download_stock_daily import download_stock_daily_csv
 from chan_bar import *
+from intra_day_price import download_30_min
 
 from datetime import datetime
 import random
@@ -40,5 +41,17 @@ def download_tickers_and_run_analysis(tickers):
 
 # download_tickers_and_run_analysis(['WEAT', 'USO', 'UNG'])
 # download_tickers_and_run_analysis(['BIDU', 'TWTR', 'S', 'DDD', 'DB', 'QCOM', 'ASHR', 'MCHI', 'CRM', 'KR', 'COST', 'MU', 'UAA', 'CHK', 'UBS', 'VLO', 'GRPN', 'WEAT', 'UNG'])
-download_tickers_and_run_analysis(['TSLA'])
+# download_tickers_and_run_analysis(['TSLA'])
+
+tickers = get_sp500_tickers()
+
+_30_min_dir = path.join(data_dir, get_today(), '30min')
+_30_min_input_dir = path.join(_30_min_dir, 'input')
+make_sure_folder_exists(_30_min_input_dir)
+for ticker in tickers:
+    download_30_min(ticker, _30_min_input_dir)
+
+_30_min_graph_dir = path.join(_30_min_dir, 'graph')
+make_sure_folder_exists(_30_min_graph_dir)
+apply_func_to_folder_files(_30_min_input_dir, _30_min_graph_dir, process_csv)
 

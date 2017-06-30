@@ -206,6 +206,11 @@ def apply_func_to_folder_files(input_dir, out_dir, func):
         func(file_path, out_dir)
 
 
+def get_today():
+    today = datetime.datetime.today()
+    return today.strftime('%Y%m%d')
+
+
 def main():
     print 'pandas version:', pd.__version__
     # tickers = get_sp500_tickers()
