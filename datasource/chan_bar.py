@@ -191,9 +191,9 @@ def process_csv(file_path, out_dir):
     draw_graph(ticker, df2, lines)
 
 
-def make_sure_folder_exists(folder):
-    if not os.path.exists(folder):
-        os.makedirs(folder)
+def make_sure_folder_exists(target_dir):
+    if not os.path.exists(target_dir):
+        os.makedirs(target_dir)
 
 
 def apply_func_to_folder_files(input_dir, out_dir, func):

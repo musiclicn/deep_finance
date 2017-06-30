@@ -33,7 +33,7 @@ def draw_graph(ticker, df, lines):
 
     TOOLS = "pan,wheel_zoom,box_zoom,reset,save"
 
-    p = figure(x_axis_type="datetime", tools=TOOLS, plot_width=1000, title=ticker + " Candlestick")
+    p = figure(x_axis_type="datetime", tools=TOOLS, plot_width=1000, title=ticker)
     p.xaxis.major_label_orientation = pi/4
     p.grid.grid_line_alpha = 0.3
 
