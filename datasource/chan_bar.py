@@ -102,7 +102,7 @@ def set_prev_trend_days(bar, processed_bars):
 
 
 def process_bars(raw_bars):
-    bars = [bar for bar in raw_bars if not np.isnan(bar.high) and  not np.isnan(bar.low)]
+    bars = [bar for bar in raw_bars if not np.isnan(bar.high) and not np.isnan(bar.low)]
     processed_bars = []
     first_bar = bars[0]
     processed_bars.append(Bar(first_bar.time, first_bar.high, first_bar.low, 1))
@@ -193,7 +193,7 @@ def process_csv(file_path, out_dir):
 
     # df['label'] = df['gravity_log%'].rolling(center=False, window=1).apply(lable_by_quantile).shift(-1)
     ticker = os.path.basename(file_path).split('.')[0]
-    df2.to_csv(os.path.join(data_dir, ticker + '_processed.csv'))
+    # df2.to_csv(os.path.join(data_dir, ticker + '_processed.csv'))
     os.chdir(out_dir)
     draw_graph(ticker, df2, lines)
 
