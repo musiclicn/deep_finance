@@ -1,7 +1,7 @@
 from config import *
 from stock_symbol import get_sp500_tickers
 from graph import draw_graph
-from chan_bi import generate_bi
+from chan_bi import generate_bi, BiGenerator
 
 import datetime
 import pandas as pd
@@ -166,12 +166,19 @@ def process_csv(file_path, out_dir):
 
     calc_gravity_and_log_change(processed_bars)
     ended_bi, trend_confirmed_bi = generate_bi(processed_bars)
-    # print(ended_bi)
-    # print(len(ended_bi))
-    # print(trend_confirmed_bi)
+    # bi_generator = BiGenerator()
+    # for bar in processed_bars:
+    #     bi_generator.append_bar(bar)
+    #
+    # ended_bi = bi_generator.ended_bi
+    # trend_confirmed_bi = bi_generator.trend_confirmed_bi
+
+    print(ended_bi)
+    print(len(ended_bi))
+    print(trend_confirmed_bi)
 
     lines = []
-    for bi in ended_bi:
+    for bi in ended_bi[1:]:
         start, end = bi.to_line()
         lines.append(start)
         lines.append(end)

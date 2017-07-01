@@ -65,6 +65,6 @@ def download_30min_and_run_analysis(tickers, request_id=None):
     apply_func_to_folder_files(input_data_dir, graph_out_dir, process_csv)
 
 
-# download_30min_and_run_analysis(['AAPL'], 'AAPL_30min')
-spx_tickers = get_sp500_tickers()
-download_30min_and_run_analysis(spx_tickers, 'SPY500_30min')
+download_30min_and_run_analysis(['AAPL'], 'AAPL_30min')
+# spx_tickers = get_sp500_tickers()
+# download_30min_and_run_analysis(spx_tickers, 'SPY500_30min')
