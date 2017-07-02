@@ -56,6 +56,6 @@ def draw_graph(ticker, df, lines):
     colors = generate_colors_from_price(y)
     p.multi_line(x, y, line_color=colors, line_width=3)
 
-    output_file(ticker+".html", title=ticker)
-    show(p)
+    # output_file(ticker+".html", title=ticker)
+    # show(p)
     export_png(p, filename=ticker + '.png')

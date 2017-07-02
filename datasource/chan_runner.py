@@ -2,7 +2,7 @@ from chan_bar import *
 from chan_bi import *
 
 
-def analyze_chan_bi(file_path, out_dir):
+def analyze_bi(file_path, out_dir):
     df = pd.DataFrame.from_csv(file_path)
     bar_generator = BarGenerator()
     bi_generator = BiGenerator()
@@ -22,10 +22,6 @@ def analyze_chan_bi(file_path, out_dir):
 
     processed_bars = bar_generator.processed_bars
     calc_gravity_and_log_change(processed_bars)
-
-    print(ended_bi)
-    print(len(ended_bi))
-    print(trend_confirmed_bi)
 
     lines = []
     for bi in ended_bi[1:]:
