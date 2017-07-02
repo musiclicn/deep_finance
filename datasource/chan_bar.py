@@ -137,6 +137,51 @@ def process_bars(raw_bars):
     return processed_bars
 
 
+class BarGenerator(object):
+    def __init__(self):
+        self.processed_bars = []
+
+    def process_bar(self, raw_bar):
+        if np.isnan(raw_bar.high) or np.isnan(raw_bar.low):
+            return 'pass', None
+
+        if len(self.processed_bars) == 0:
+            first_bar = raw_bar
+            new_bar = Bar(first_bar.time, first_bar.high, first_bar.low, 1)
+            self.processed_bars.append(new_bar)
+            return 'new', new_bar
+
+        processed_bars = self.processed_bars
+        bar1 = processed_bars.pop()
+        bar2 = raw_bar
+        relationship = determine_bar_relationship(bar1, bar2)
+        if relationship in [BarRelationship.LEFT_CONTAINS_RIGHT, BarRelationship.RIGHT_CONTAINS_LEFT]:
+            new_bar = merge_bars(bar1, bar2, relationship)
+            if len(processed_bars) > 0:
+                pre_bar = processed_bars[-1]
+                if new_bar.trend == pre_bar.trend:
+                    new_bar.cur_trend_days = pre_bar.cur_trend_days + 1
+            processed_bars.append(new_bar)
+            return 'merge', new_bar
+            # set_prev_trend_days(new_bar, processed_bars)
+        elif relationship == BarRelationship.UP_TREND:
+            processed_bars.append(bar1)
+            bar2.trend = 1
+            processed_bars.append(bar2)
+            if bar1.trend == 1:
+                bar2.cur_trend_days = bar1.cur_trend_days + 1
+            return 'new', bar2
+            # set_prev_trend_days(bar2, processed_bars)
+        elif relationship == BarRelationship.DOWN_TREND:
+            processed_bars.append(bar1)
+            bar2.trend = -1
+            processed_bars.append(bar2)
+            if bar1.trend == -1:
+                bar2.cur_trend_days = bar1.cur_trend_days + 1
+            # set_prev_trend_days(bar2, processed_bars)
+            return 'new', bar2
+
+
 def calc_log_change(df):
     df['gravity_log'] = np.log(df.gravity) - np.log(df.gravity.shift(1))
     df['high_log'] = np.log(df.high) - np.log(df.gravity.shift(1))

@@ -1,5 +1,6 @@
 from download_stock_daily import download_stock_daily_csv
 from chan_bar import *
+from chan_runner import run_chan
 from intra_day_price import download_30_min
 
 from datetime import datetime
@@ -62,9 +63,9 @@ def download_30min_and_run_analysis(tickers, request_id=None):
     # process_csv(os.path.join(test_dir, 'AAPL.csv'), output_dir)
     graph_out_dir = path.join(request_id_dir, 'graph')
     make_sure_folder_exists(graph_out_dir)
-    apply_func_to_folder_files(input_data_dir, graph_out_dir, process_csv)
+    apply_func_to_folder_files(input_data_dir, graph_out_dir, run_chan)
 
 
-download_30min_and_run_analysis(['AAPL'], 'AAPL_30min')
+download_30min_and_run_analysis(['AAPL'], 'AAPL_30min_dynamic')
 # spx_tickers = get_sp500_tickers()
 # download_30min_and_run_analysis(spx_tickers, 'SPY500_30min')

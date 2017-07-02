@@ -230,6 +230,15 @@ class BiGenerator(object):
     def cur_bi_trend(self):
         return self.trend_confirmed_bi[-1].trend
 
+    def replace_last_bar(self, new_bar):
+        if len(self.reverse_candidate_bars) > 0:
+            self.reverse_candidate_bars[-1] = new_bar
+        elif len(self.weak_bi_pairs) > 0:
+            bi1, bi2 = self.weak_bi_pairs[-1]
+            bi2.bars[-1] = new_bar
+        elif len(self.trend_confirmed_bi) > 0:
+            self.trend_confirmed_bi[-1].bars[-1] = new_bar
+
     def append_bar(self, bar):
         """
         if there is a trend confirmed ( this is always true because of phantom bi trick)
