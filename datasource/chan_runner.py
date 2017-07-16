@@ -2,7 +2,7 @@ from chan_bar import *
 from chan_bi import *
 
 
-def analyze_bi(file_path, out_dir):
+def dynamic_generate_bi(file_path, out_dir):
     df = pd.DataFrame.from_csv(file_path)
     bar_generator = BarGenerator()
     bi_generator = BiGenerator()

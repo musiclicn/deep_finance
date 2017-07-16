@@ -64,7 +64,7 @@ def download_data_and_run_analysis(tickers, request_id=None, frequency='Daily'):
 
     graph_out_dir = path.join(request_id_dir, 'graph')
     make_sure_folder_exists(graph_out_dir)
-    apply_func_to_folder_files(input_data_dir, graph_out_dir, analyze_bi)
+    apply_func_to_folder_files(input_data_dir, graph_out_dir, dynamic_generate_bi)
 
 
 # download_data_and_run_analysis(['AAPL'], 'AAPL_Daily', frequency='Daily')
