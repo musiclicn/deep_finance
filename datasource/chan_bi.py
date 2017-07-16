@@ -7,12 +7,6 @@ class BiFormationStatus(object):
     BiConfirmed = 2
 
 
-class BiFactory(object):
-    confirmed_bi = []
-    trend_confirmed_bi = []
-    candidate_bi = []
-
-
 class Bi(object):
     @staticmethod
     def create_bi(bars):
@@ -265,7 +259,7 @@ class BiGenerator(object):
                 self.ended_bi.append(pre_bi)
                 self.trend_confirmed_bi.append(reverse_bi)
 
-        else:
+        else:# trend is same
             if len(self.weak_bi_pairs) == 0 and len(self.reverse_candidate_bars) == 0:
                 self.trend_confirmed_bi[-1].append_bar(bar)
             elif len(self.reverse_candidate_bars) > 0:
