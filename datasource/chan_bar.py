@@ -1,7 +1,7 @@
 from config import *
 from stock_symbol import get_sp500_tickers
 from graph import draw_graph
-from chan_bi import generate_bi
+from chan_bi import generate_bi, BiGenerator
 
 import datetime
 import pandas as pd
@@ -102,7 +102,7 @@ def set_prev_trend_days(bar, processed_bars):
 
 
 def process_bars(raw_bars):
-    bars = [bar for bar in raw_bars if not np.isnan(bar.high) and  not np.isnan(bar.low)]
+    bars = [bar for bar in raw_bars if not np.isnan(bar.high) and not np.isnan(bar.low)]
     processed_bars = []
     first_bar = bars[0]
     processed_bars.append(Bar(first_bar.time, first_bar.high, first_bar.low, 1))
@@ -137,6 +137,51 @@ def process_bars(raw_bars):
     return processed_bars
 
 
+class BarGenerator(object):
+    def __init__(self):
+        self.processed_bars = []
+
+    def process_bar(self, raw_bar):
+        if np.isnan(raw_bar.high) or np.isnan(raw_bar.low):
+            return 'pass', None
+
+        if len(self.processed_bars) == 0:
+            first_bar = raw_bar
+            new_bar = Bar(first_bar.time, first_bar.high, first_bar.low, 1)
+            self.processed_bars.append(new_bar)
+            return 'new', new_bar
+
+        processed_bars = self.processed_bars
+        bar1 = processed_bars.pop()
+        bar2 = raw_bar
+        relationship = determine_bar_relationship(bar1, bar2)
+        if relationship in [BarRelationship.LEFT_CONTAINS_RIGHT, BarRelationship.RIGHT_CONTAINS_LEFT]:
+            new_bar = merge_bars(bar1, bar2, relationship)
+            if len(processed_bars) > 0:
+                pre_bar = processed_bars[-1]
+                if new_bar.trend == pre_bar.trend:
+                    new_bar.cur_trend_days = pre_bar.cur_trend_days + 1
+            processed_bars.append(new_bar)
+            return 'merge', new_bar
+            # set_prev_trend_days(new_bar, processed_bars)
+        elif relationship == BarRelationship.UP_TREND:
+            processed_bars.append(bar1)
+            bar2.trend = 1
+            processed_bars.append(bar2)
+            if bar1.trend == 1:
+                bar2.cur_trend_days = bar1.cur_trend_days + 1
+            return 'new', bar2
+            # set_prev_trend_days(bar2, processed_bars)
+        elif relationship == BarRelationship.DOWN_TREND:
+            processed_bars.append(bar1)
+            bar2.trend = -1
+            processed_bars.append(bar2)
+            if bar1.trend == -1:
+                bar2.cur_trend_days = bar1.cur_trend_days + 1
+            # set_prev_trend_days(bar2, processed_bars)
+            return 'new', bar2
+
+
 def calc_log_change(df):
     df['gravity_log'] = np.log(df.gravity) - np.log(df.gravity.shift(1))
     df['high_log'] = np.log(df.high) - np.log(df.gravity.shift(1))
@@ -151,75 +196,3 @@ def calc_gravity_and_log_change(processed_bars):
         bar.gravity = (bar.high + bar.low) / 2
         bar.gravity_log = np.log(bar.gravity / pre_gravity)
         pre_gravity = bar.gravity
-
-
-def process_csv(file_path, out_dir):
-    df = pd.DataFrame.from_csv(file_path)
-    raw_bars = []
-    for index, row in df.iterrows():
-        bar = Bar(index, row.High, row.Close, 0)
-        raw_bars.append(bar)
-
-    processed_bars = process_bars(raw_bars)
-    # print 'processed_bars:', processed_bars
-    # print processed_bars[0]
-
-    calc_gravity_and_log_change(processed_bars)
-    ended_bi, trend_confirmed_bi = generate_bi(processed_bars)
-    # print(ended_bi)
-    # print(len(ended_bi))
-    # print(trend_confirmed_bi)
-
-    lines = []
-    for bi in ended_bi:
-        start, end = bi.to_line()
-        lines.append(start)
-        lines.append(end)
-
-    df2 = bars_to_dataframe(processed_bars)
-    df2['gravity'] = (df2.high + df2.low) / 2
-
-    calc_log_change(df2)
-    # del df2['high']
-    # del df2['low']
-    del df2['gravity']
-
-    # df['label'] = df['gravity_log%'].rolling(center=False, window=1).apply(lable_by_quantile).shift(-1)
-    ticker = os.path.basename(file_path).split('.')[0]
-    df2.to_csv(os.path.join(data_dir, ticker + '_processed.csv'))
-    os.chdir(out_dir)
-    draw_graph(ticker, df2, lines)
-
-
-def make_sure_folder_exists(target_dir):
-    if not os.path.exists(target_dir):
-        os.makedirs(target_dir)
-
-
-def apply_func_to_folder_files(input_dir, out_dir, func):
-    make_sure_folder_exists(out_dir)
-    os.chdir(out_dir)
-    files = os.listdir(input_dir)
-    for f in files:
-        print("processing {}".format(f))
-        file_path = os.path.join(input_dir, f)
-        func(file_path, out_dir)
-
-
-def get_today():
-    today = datetime.datetime.today()
-    return today.strftime('%Y%m%d')
-
-
-def main():
-    print 'pandas version:', pd.__version__
-    # tickers = get_sp500_tickers()
-    # download_stock_daily_csv(tickers, test_dir, test_start_date, test_end_date)
-    today = datetime.datetime.today()
-    output_dir = os.path.join(data_dir,  today.strftime('%Y%m%d'))
-    make_sure_folder_exists(output_dir)
-    # process_csv(os.path.join(test_dir, 'AAPL.csv'), output_dir)
-    apply_func_to_folder_files(test_dir, output_dir, process_csv)
-
-if __name__ == "__main__":
-    main()
