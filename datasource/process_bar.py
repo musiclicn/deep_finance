@@ -169,7 +169,7 @@ def process_csv(input_dir, out_dir):
         df = pd.DataFrame.from_csv(file_name)
         raw_bars = []
         for index, row in df.iterrows():
-            bar = Bar(index, row.High, row.Close, 0)
+            bar = Bar(index, row.High, row.Low, 0)
             raw_bars.append(bar)
 
         processed_bars = process_bars(raw_bars)
