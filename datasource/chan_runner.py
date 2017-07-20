@@ -1,5 +1,10 @@
 from chan_bar import *
 from chan_bi import *
+from graph import draw_graph
+from config import *
+
+import os
+import datetime
 
 
 def dynamic_generate_bi(file_path, out_dir):
@@ -40,7 +45,7 @@ def dynamic_generate_bi(file_path, out_dir):
     os.chdir(out_dir)
     draw_graph(ticker, df2, lines)
 
-
+'''
 def old_process_csv(file_path, out_dir):
     df = pd.DataFrame.from_csv(file_path)
     raw_bars = []
@@ -84,7 +89,7 @@ def old_process_csv(file_path, out_dir):
     # df2.to_csv(os.path.join(data_dir, ticker + '_processed.csv'))
     os.chdir(out_dir)
     draw_graph(ticker, df2, lines)
-
+'''
 
 def make_sure_folder_exists(target_dir):
     if not os.path.exists(target_dir):
