@@ -21,6 +21,10 @@ class Bi(object):
         self.trend = bars[0].trend
         self.status = status
 
+    @property
+    def last_bar(self):
+        return self.bars[-1]
+
     def append_bar(self, bar):
         self.bars.append(bar)
 
@@ -69,17 +73,16 @@ def find_first_and_second_bi(bar_queue):
     return phantom_down_bi, reversed_bi
 
 
-def try_find_trend_reversed_bi(bar_queue, pre_bi_trend):
-    if len(bar_queue) < 3:
+def try_find_trend_reversed_bi(bar_queue, pre_bi):
+    if len(bar_queue) < 4:
         return False, None
-    if bar_queue[0].trend != pre_bi_trend and bar_queue[1].trend == bar_queue[0].trend \
-            and bar_queue[2].trend == bar_queue[0].trend:
-        return True, find_trend_reversed_bi(bar_queue, pre_bi_trend)
-    elif len(bar_queue) >= 5:
-        if bar_queue[0].trend != pre_bi_trend and bar_queue[1].trend == bar_queue[0].trend and \
-                        bar_queue[2].trend != bar_queue[0].trend and bar_queue[3].trend == bar_queue[0].trend and \
-                        bar_queue[4].trend == bar_queue[0].trend:
-            return True, find_4_out_of_5_reversed_bi(bar_queue, pre_bi_trend)
+    pre_bi_trend = pre_bi.trend
+    if pre_bi_trend == -1:
+        if bar_queue[-1].low > pre_bi.last_bar.high and bar_queue[-1].trend == 1:
+            return True, Bi(list(bar_queue))
+    elif pre_bi_trend == 1:
+        if bar_queue[-1].high < pre_bi.last_bar.low and bar_queue[-1].trend == -1:
+            return True, Bi(list(bar_queue))
     return False, None
 
 
@@ -135,7 +138,7 @@ def find_weak_bi_pair(bar_queue):
 
 
 def find_reversal_bi_and_weak_bi_pairs(bar_queue, pre_bi, weak_bi_pairs):
-    is_trend_reversed, reversed_bi = try_find_trend_reversed_bi(bar_queue, pre_bi.trend)
+    is_trend_reversed, reversed_bi = try_find_trend_reversed_bi(bar_queue, pre_bi)
     if is_trend_reversed:
         return reversed_bi
     else:
@@ -175,7 +178,7 @@ def find_reversed_trend_confirmed_bi(bar_queue, pre_trend_confirmed_bi):
     # easiest way is to determine the sum of strength of all these pairs and merge to current bi or next bi depending on trend
     pre_bi_trend = pre_trend_confirmed_bi.trend
 
-    is_trend_reversed, trend_reversed_bi = try_find_trend_reversed_bi(bar_queue, pre_bi_trend)
+    is_trend_reversed, trend_reversed_bi = try_find_trend_reversed_bi(bar_queue, pre_trend_confirmed_bi)
     if is_trend_reversed:
         return trend_reversed_bi
     else:
@@ -217,12 +220,15 @@ class BiGenerator(object):
         self.weak_bi_pairs = []
         self.trend_confirmed_bi = []
         self.ended_bi = []
-        phantom_bi = PhantomBi(-1)
-        self.trend_confirmed_bi.append(phantom_bi)
+        self.first_run = True
+
+    @property
+    def current_bi(self):
+        return self.trend_confirmed_bi[-1]
 
     @property
     def cur_bi_trend(self):
-        return self.trend_confirmed_bi[-1].trend
+        return self.current_bi.trend
 
     def replace_last_bar(self, new_bar):
         if len(self.reverse_candidate_bars) > 0:
@@ -246,28 +252,37 @@ class BiGenerator(object):
                     create weak bi from reverse_candidate_bars
                     append bar into reverse_candidate_bars
         """
+        if self.first_run:
+            phantom_bi = PhantomBi(-1)
+            phantom_bi.bars.append(bar)
+            self.trend_confirmed_bi.append(phantom_bi)
+            self.first_run = False
+            return
+
         if len(self.trend_confirmed_bi) == 0:
             raise IOError('there is no trend confirmed bi')
 
         if bar.trend != self.cur_bi_trend:
             self.reverse_candidate_bars.append(bar)
-            success, reverse_bi = try_find_trend_reversed_bi(self.reverse_candidate_bars, self.cur_bi_trend)
+            success, reverse_bi = try_find_trend_reversed_bi(self.reverse_candidate_bars, self.current_bi)
             if success:
                 pre_bi = self.trend_confirmed_bi.pop()
-                for weak_bi_pair in self.weak_bi_pairs:
-                    pre_bi.merge_weak_bi_pair(weak_bi_pair)
                 self.ended_bi.append(pre_bi)
                 self.trend_confirmed_bi.append(reverse_bi)
-
-        else:# trend is same
-            if len(self.weak_bi_pairs) == 0 and len(self.reverse_candidate_bars) == 0:
+                self.reverse_candidate_bars.clear()
+        else:
+            # trend is same
+            if len(self.reverse_candidate_bars) == 0:
                 self.trend_confirmed_bi[-1].append_bar(bar)
             elif len(self.reverse_candidate_bars) > 0:
                 self.reverse_candidate_bars.append(bar)
-                weak_bi_pair = find_weak_bi_pair(self.reverse_candidate_bars)
-                self.weak_bi_pairs.append(weak_bi_pair)
-            elif len(self.weak_bi_pairs) > 0 and len(self.reverse_candidate_bars) == 0:
-                bi1, bi2 = self.weak_bi_pairs[-1]
-                bi2.append_bar(bar)
+                if bar.trend == 1:
+                    if bar.high >= self.current_bi.last_bar.high:
+                        self.trend_confirmed_bi[-1].append_bars(self.reverse_candidate_bars)
+                        self.reverse_candidate_bars.clear()
+                elif bar.trend == -1:
+                    if bar.low <= self.current_bi.last_bar.high:
+                        self.trend_confirmed_bi[-1].append_bars(self.reverse_candidate_bars)
+                        self.reverse_candidate_bars.clear()
             else:
                 raise NotImplemented('unexpected condition')
