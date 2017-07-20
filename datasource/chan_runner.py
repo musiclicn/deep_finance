@@ -24,7 +24,7 @@ def dynamic_generate_bi(file_path, out_dir):
     calc_gravity_and_log_change(processed_bars)
 
     lines = []
-    for bi in ended_bi[1:]:
+    for bi in ended_bi:
         start, end = bi.to_line()
         lines.append(start)
         lines.append(end)
