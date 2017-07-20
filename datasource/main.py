@@ -54,19 +54,19 @@ def download_data_and_run_analysis(tickers, request_id=None, frequency='Daily'):
     make_sure_folder_exists(request_id_dir)
     input_data_dir = path.join(request_id_dir, 'data')
     make_sure_folder_exists(input_data_dir)
-    # if frequency == '30min':
-    #     for ticker in tickers:
-    #         download_30_min(ticker, input_data_dir)
-    # elif frequency == 'Daily':
-    #     start_date = datetime.today() - timedelta(days=365 * 2)
-    #     end_date = datetime.today()
-    #     download_stock_daily_csv(tickers, input_data_dir, start_date, end_date)
+    if frequency == '30min':
+        for ticker in tickers:
+            download_30_min(ticker, input_data_dir)
+    elif frequency == 'Daily':
+        start_date = datetime.today() - timedelta(days=365 * 2)
+        end_date = datetime.today()
+        download_stock_daily_csv(tickers, input_data_dir, start_date, end_date)
 
     graph_out_dir = path.join(request_id_dir, 'graph')
     make_sure_folder_exists(graph_out_dir)
     apply_func_to_folder_files(input_data_dir, graph_out_dir, dynamic_generate_bi)
 
 
-# download_data_and_run_analysis(['AAPL'], 'AAPL_Daily', frequency='Daily')
-spx_tickers = get_sp500_tickers()
-download_data_and_run_analysis(spx_tickers, 'SPY500_Daily', frequency='Daily')
+download_data_and_run_analysis(['AAPL'], 'AAPL_Daily', frequency='Daily')
+# spx_tickers = get_sp500_tickers()
+# download_data_and_run_analysis(spx_tickers, 'SPY500_Daily', frequency='Daily')
