@@ -72,10 +72,12 @@ def try_find_trend_reversed_bi(bar_queue, pre_bi):
         return False, None
     pre_bi_trend = pre_bi.trend
     if pre_bi_trend == -1:
-        if bar_queue[-1].low > pre_bi.last_bar.high and bar_queue[-1].trend == 1:
+        if bar_queue[-1].low > pre_bi.last_bar.high and bar_queue[-1].low > pre_bi.bars[-2].high and \
+                        bar_queue[-1].trend == 1:
             return True, Bi(list(bar_queue))
     elif pre_bi_trend == 1:
-        if bar_queue[-1].high < pre_bi.last_bar.low and bar_queue[-1].trend == -1:
+        if bar_queue[-1].high < pre_bi.last_bar.low and bar_queue[-1].high < pre_bi.bars[-2].low and \
+                        bar_queue[-1].trend == -1:
             return True, Bi(list(bar_queue))
     return False, None
 
@@ -116,6 +118,7 @@ def generate_bi(bars):
 
     return ended_bi, trend_confirmed_bi
 '''
+
 
 class BiGenerator(object):
 
