@@ -68,7 +68,7 @@ class PhantomBi(Bi):
 
 
 def try_find_trend_reversed_bi(bar_queue, pre_bi):
-    if len(bar_queue) < 4:
+    if len(bar_queue) < 4 or len(pre_bi.bars) < 2:
         return False, None
     pre_bi_trend = pre_bi.trend
     if pre_bi_trend == -1:
